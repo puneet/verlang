@@ -2687,12 +2687,12 @@ unittest {
   import std.random ;
   import std.math ;
   import std.stdio ;
-  for(ulong k = 1 ; k < 64 ; ++k){
+  for(ulong k = 1 ; k < 15 ; ++k){
     static bvec!63     a ; 
     static bvec!63     b ;  
     for(uint i = 0 ; i < 1000 ; ++i){
-      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
-      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
       a = a_1 ;
       b = b_1 ;
       auto y = a + b ;
@@ -2708,16 +2708,17 @@ unittest {
 
 
 
+
 unittest {
   import std.random ;
   import std.math ;
   import std.stdio ;
-  for(ulong k = 1 ; k < 64 ; ++k){
+  for(ulong k = 1 ; k < 15 ; ++k){
     static bvec!63     a ; 
     static bvec!63     b ;  
     for(uint i = 0 ; i < 1000 ; ++i){
-      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
-      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
       a = a_1 ;
       b = b_1 ;
       auto y = a - b ;
@@ -2740,17 +2741,18 @@ unittest {
 }
 
 
+
 unittest {
   import std.random ;
   import std.math ;
   import std.stdio ;
-  for(ulong k = 1 ; k != 33 ; ++k){
+  for(ulong k = 1 ; k != 15 ; ++k){
     static bvec!63     a ; 
     static bvec!63     b ;  
     // static bvec!64     y ;
     for(uint i = 0 ; i != 1000; ++i){
-      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
-      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
       a = a_1 ;
       b = b_1 ;
       auto y = a * b ;
@@ -2763,4 +2765,5 @@ unittest {
   }
 
 }
+
 
