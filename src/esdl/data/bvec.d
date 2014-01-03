@@ -1,14 +1,14 @@
 // Written in the D programming language.
 
 /**
-Copyright: Copyright Digital Mars 2007 - 2011.
-           Coverify Systems Technology 2011 - 2013
-License:   Distributed under the Boost Software License, Version 1.0.
-           (See accompanying file LICENSE_1_0.txt or copy at
-           http://www.boost.org/LICENSE_1_0.txt)
-Authors:   $(WEB digitalmars.com, Walter Bright),
-	   $(WEB erdani.org, Andrei Alexandrescu),
-	   Puneet Goel <puneet@coverify.com>
+   Copyright: Copyright Digital Mars 2007 - 2011.
+   Coverify Systems Technology 2011 - 2013
+   License:   Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file LICENSE_1_0.txt or copy at
+   http://www.boost.org/LICENSE_1_0.txt)
+   Authors:   $(WEB digitalmars.com, Walter Bright),
+   $(WEB erdani.org, Andrei Alexandrescu),
+   Puneet Goel <puneet@coverify.com>
 */
 
 // This file is part of esdl.
@@ -48,7 +48,7 @@ template isBitVector(T) {
   static if(is(T unused == vec!(S, L, N), bool S, bool L, N...))
     enum bool isBitVector = true;
   else
-    enum bool isBitVector = false;
+  enum bool isBitVector = false;
 }
 
 template BitLength(T) {
@@ -312,49 +312,49 @@ private template VecParams(SIZE_T SIZE, bool S=true) {
     }
   }
   else
-    static if(SIZE <= 16) {
+  static if(SIZE <= 16) {
+    static if(S) {
+      private alias short StoreT;
+      private alias short ValueT;
+    }
+    else {
+      private alias ushort StoreT;
+      private alias ushort ValueT;
+    }
+  }
+  else
+  static if(SIZE <= 32 || size_t.sizeof*8 == 32) {
+    static if(SIZE <= 32) {
       static if(S) {
-	private alias short StoreT;
-	private alias short ValueT;
+	private alias int StoreT;
+	private alias int ValueT;
       }
       else {
-	private alias ushort StoreT;
-	private alias ushort ValueT;
+	private alias uint StoreT;
+	private alias uint ValueT;
       }
     }
-    else
-      static if(SIZE <= 32 || size_t.sizeof*8 == 32) {
-	static if(SIZE <= 32) {
-	  static if(S) {
-	    private alias int StoreT;
-	    private alias int ValueT;
-	  }
-	  else {
-	    private alias uint StoreT;
-	    private alias uint ValueT;
-	  }
-	}
-	else {
-	  static if(S) {
-	    private alias int  StoreT;
-	    private alias long ValueT;
-	  }
-	  else {
-	    private alias uint  StoreT;
-	    private alias ulong ValueT;
-	  }
-	}
+    else {
+      static if(S) {
+	private alias int  StoreT;
+	private alias long ValueT;
       }
       else {
-	static if(S) {
-	  private alias long StoreT;
-	  private alias long ValueT;
-	}
-	else {
-	  private alias ulong StoreT;
-	  private alias ulong ValueT;
-	}
+	private alias uint  StoreT;
+	private alias ulong ValueT;
       }
+    }
+  }
+  else {
+    static if(S) {
+      private alias long StoreT;
+      private alias long ValueT;
+    }
+    else {
+      private alias ulong StoreT;
+      private alias ulong ValueT;
+    }
+  }
 
   // Word Size -- bits in a word
   private enum SIZE_T WORDSIZE = 8*StoreT.sizeof;
@@ -407,7 +407,7 @@ template VecSize(SIZE_T L=1, N...) {
 // A.opCmp(B) as well as B.opCmp(B) in case both are defined. We want
 // to avoid that situation.
 template _vecCmpT(T, U)	// return true if T >= U
-if(isBitVector!T && isBitVector!U) {
+  if(isBitVector!T && isBitVector!U) {
   static if     (T.IS4STATE && !U.IS4STATE)  enum bool _vecCmpT = true;
   else static if(!T.IS4STATE && U.IS4STATE)  enum bool _vecCmpT = false;
   else static if(T.ISSIGNED && !U.ISSIGNED)  enum bool _vecCmpT = true;
@@ -420,10 +420,10 @@ if(isBitVector!T && isBitVector!U) {
   else static if(!T.MULTIDIM && U.MULTIDIM)  enum bool _vecCmpT = false;
   else static if(!T.MULTIDIM && !U.MULTIDIM) enum bool _vecCmpT = true;
     else enum bool _vecCmpT = true; // _vecCmpT(T.ELEMTYPE, U.ELEMTYPE);
- }
+}
 
 template vec(T, U, string OP)
-if(isBitVector!T && isBitVector!U) {
+  if(isBitVector!T && isBitVector!U) {
   static if(T.ISSIGNED && U.ISSIGNED) {enum bool S = true;}
   else                                {enum bool S = false;}
   static if(T.IS4STATE || U.IS4STATE) {enum bool L = true;}
@@ -443,7 +443,7 @@ if(isBitVector!T && isBitVector!U) {
   static if(OP == "*")                {enum SIZE_T N = T.SIZE + U.SIZE;}
   static if(OP == "/")                {enum SIZE_T N = T.SIZE;}
   alias vec!(S, L, N) vec;
- }
+}
 
 struct vec(bool S, bool L, string VAL, SIZE_T RADIX) {
   enum SIZE_T SIZE = stringBitSize(VAL, RADIX);
@@ -638,27 +638,27 @@ alias vec!(false, false, 1LU) bit;
 
 template vec(T) if(is(T == bool)) {
   alias vec!(false, false, 1) vec;
- }
+}
 
 template vec(T) if(isIntegral!T) {
   alias vec!(isSigned!T, false, T.sizeof*8) vec;
- }
+}
 
 template BitVec(N...) if(CheckVecParams!N) {
   alias vec!(true, false, N) BitVec;
- }
+}
 
 template UBitVec(N...) if(CheckVecParams!N) {
   alias vec!(false, false, N) UBitVec;
- }
+}
 
 template LogicVec(N...) if(CheckVecParams!N) {
   alias vec!(true, true, N) LogicVec;
- }
+}
 
 template ULogicVec(N...) if(CheckVecParams!N) {
   alias vec!(false, true, N) ULogicVec;
- }
+}
 
 
 // A tightly packed fixed width vector of bits
@@ -759,17 +759,17 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
     }
 
     public void setAval(T)(T t)
-    if(is(T == bool) ||
-       (isIntegral!T && T.sizeof*8 <= SIZE) ||
-       (isBitVector!T && T.SIZE <= SIZE && (! T.IS4STATE))) {
-      static if(is(T == bool)) enum bool _S = false;
-      else static if(isBitVector!T) enum bool _S = T.ISSIGNED;
-	else enum bool _S = isSigned!T;
-      vec!(_S, false, N) v = t;
-      // http://d.puremagic.com/issues/show_bug.cgi?id=9143
-      // vec!(S, false, N) retVal;
-      this._aval = v._aval;
-    }
+      if(is(T == bool) ||
+	 (isIntegral!T && T.sizeof*8 <= SIZE) ||
+	 (isBitVector!T && T.SIZE <= SIZE && (! T.IS4STATE))) {
+	static if(is(T == bool)) enum bool _S = false;
+	else static if(isBitVector!T) enum bool _S = T.ISSIGNED;
+	  else enum bool _S = isSigned!T;
+	vec!(_S, false, N) v = t;
+	// http://d.puremagic.com/issues/show_bug.cgi?id=9143
+	// vec!(S, false, N) retVal;
+	this._aval = v._aval;
+      }
 
     static if(L) {
       public void setBval(T)(T t)
@@ -1325,9 +1325,9 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
     }
 
     auto opIndex(size_t i) const
-    in {
-      assert(i < SIZE);
-    }
+      in {
+	assert(i < SIZE);
+      }
     body {
       vec!(false, L, 1) retval;
       static if(STORESIZE == 1) {
@@ -1378,10 +1378,10 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
     }
 
     auto opIndexAssign(T)(T other, size_t i)
-    if(isBitVector!T && T.SIZE == 1)
-      in {
-	assert(i < SIZE);
-      }
+      if(isBitVector!T && T.SIZE == 1)
+	in {
+	  assert(i < SIZE);
+	}
     body {
       static if(STORESIZE == 1) {
 	static if(other.IS4STATE) {
@@ -1431,12 +1431,12 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
 
     // And/Or/Xor
     public auto opBinary(string op, T)(T other)
-    if((isBitVector!T || isIntegral!T) &&
-       (op == "&" || op == "|" || op == "^")) {
-      vec!(typeof(this), T, op) result = this;
-      result.opOpAssign!op(other);
-      return result;
-    }
+      if((isBitVector!T || isIntegral!T) &&
+	 (op == "&" || op == "|" || op == "^")) {
+	vec!(typeof(this), T, op) result = this;
+	result.opOpAssign!op(other);
+	return result;
+      }
 
     // And/Or/Xor Assign
     public void opOpAssign(string op, T)(T other)
@@ -1888,12 +1888,12 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
 
     public auto get(int COUNT)(size_t i) const
-    if(COUNT <= SIZE) {
-      assert(i + COUNT <= SIZE);
-      vec!(S,L,N) retval = cast(typeof(this)) this;
-      retval >>= i;
-      return cast(vec!(S,L,COUNT)) retval;
-    }
+      if(COUNT <= SIZE) {
+	assert(i + COUNT <= SIZE);
+	vec!(S,L,N) retval = cast(typeof(this)) this;
+	retval >>= i;
+	return cast(vec!(S,L,COUNT)) retval;
+      }
 
     // public BitVec!(I, J) slice(size_t I, size_t J=0)() {
     //   static assert(I < SIZE && I >= 0 && J < SIZE && J >= 0);
@@ -2065,173 +2065,173 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
 
     public auto opUnary(string op)()
-    if(op == "-") {
-      typeof(this) result = 0;
-      result -= this;
-      return result;
-    }
+      if(op == "-") {
+	typeof(this) result = 0;
+	result -= this;
+	return result;
+      }
 
     public auto opBinary(string op, T)(T other)
-    if(isIntegral!T &&
-       (op == "+" || op == "-")) {
-      vec!T rhs = other;
-      return this.opBinary!op(rhs);
-    }
+      if(isIntegral!T &&
+	 (op == "+" || op == "-")) {
+	vec!T rhs = other;
+	return this.opBinary!op(rhs);
+      }
 
     public auto opBinaryRight(string op, T)(T other)
-    if(isIntegral!T &&
-       (op == "+" || op == "-")) {
-      vec!T rhs = other;
-      return rhs.opBinary!op(this);
-    }
+      if(isIntegral!T &&
+	 (op == "+" || op == "-")) {
+	vec!T rhs = other;
+	return rhs.opBinary!op(this);
+      }
 
     // Addition and Substraction with other BitVec
     public auto opBinary(string op, T)(T other)
-    if(isBitVector!T && (op == "+" || op == "-")) {
-      static if(SIZE >= T.SIZE) {
-	// typeof(this) result = this;
-	vec!(S, L, SIZE+1) result = this;
-	static if(op == "+") result += other;
-	else result -= other;
-	return result;
-      }
-      else {
-	static if(op == "+") {
-	  vec!(T.ISSIGNED, T.IS4STATE, T.SIZE+1) result = other;
+      if(isBitVector!T && (op == "+" || op == "-")) {
+	static if(SIZE >= T.SIZE) {
+	  // typeof(this) result = this;
+	  vec!(S, L, SIZE+1) result = this;
+	  static if(op == "+") result += other;
+	  else result -= other;
+	  return result;
 	}
 	else {
-	  vec!(T.IS4STATE, T.IS4STATE, T.SIZE+1) result = -other;
+	  static if(op == "+") {
+	    vec!(T.ISSIGNED, T.IS4STATE, T.SIZE+1) result = other;
+	  }
+	  else {
+	    vec!(T.IS4STATE, T.IS4STATE, T.SIZE+1) result = -other;
+	  }
+	  result += this;
+	  return result;
 	}
-	result += this;
-	return result;
       }
-    }
 
     public auto opBinary(string op)(size_t shift)
-    if(op == "<<" || op == ">>" || op == ">>>") {
-      typeof(this) result = this;
-      result.opOpAssign!(op)(shift);
-      return result;
-    }
+      if(op == "<<" || op == ">>" || op == ">>>") {
+	typeof(this) result = this;
+	result.opOpAssign!(op)(shift);
+	return result;
+      }
 
     public auto opBinary(string op, string file= __FILE__,
 			 size_t line = __LINE__, T)(T other)
-    if(isBitVector!T && (op == "*")) {
-      reportX!(file, line)(other);
-      // The result is signed only if both the operands are signed
-      static if(ISSIGNED && other.ISSIGNED)
-	enum bool _S = true;
-      else
-	enum bool _S = false;
-      static if(IS4STATE && other.IS4STATE)
-	enum bool _L = true;
-      else
-	enum bool _L = false;
-      // result is addition of the SIZES
-      enum SIZE_T _SIZE = SIZE + T.SIZE;
+      if(isBitVector!T && (op == "*")) {
+	reportX!(file, line)(other);
+	// The result is signed only if both the operands are signed
+	static if(ISSIGNED && other.ISSIGNED)
+	  enum bool _S = true;
+	else
+	  enum bool _S = false;
+	static if(IS4STATE && other.IS4STATE)
+	  enum bool _L = true;
+	else
+	  enum bool _L = false;
+	// result is addition of the SIZES
+	enum SIZE_T _SIZE = SIZE + T.SIZE;
 
-      vec!(_S,_L,_SIZE) result = 0;
+	vec!(_S,_L,_SIZE) result = 0;
 
-      static if(result.SIZE <= 16) {
-	result.store_t[] r = result._aval;
-      }
-      else {
-	uint[] r = cast(uint[]) result._aval;
-      }
-
-      static if(this.SIZE <= 16) {
-	store_t[] a = this._aval;
-      }
-      else {
-	uint[] a = cast(uint[]) this._aval;
-      }
-
-      static if(other.SIZE <= 16) {
-	other.store_t[] b = other._aval;
-      }
-      else {
-	uint[] b = cast(uint[]) other._aval;
-      }
-
-      bool aNegative = this.aValSigned();
-      bool bNegative = other.aValSigned();
-
-      uint _a = void;
-      uint _b = void;
-      for(size_t i=0; i!=r.length; ++i) {
-	uint carry = 0;
-	if(i < a.length) {	     // initialize and sign extend if required
-	  _a = a[i];
-	  if(aNegative) {
-	    static if(store_t.sizeof == 8) {
-	      // convert 64 bit mask to 32 bits
-	      static if(SIZE % 64 <= 32) {
-		if(i == a.length - 2)
-		  _a |= cast(uint) ~UMASK;
-		if(i == a.length - 1)
-		  _a = uint.max;
-	      }
-	      else {
-		if(i == a.length - 1)
-		  _a |= cast(uint) ~(UMASK >>> 32);
-	      }
-	    }
-	    else {
-	      if(i == a.length - 1)
-		_a |= ~(cast(uint) UMASK);
-	    }
-	  }
+	static if(result.SIZE <= 16) {
+	  result.store_t[] r = result._aval;
 	}
 	else {
-	  if(aNegative)
-	    _a = uint.max;
-	  else
-	    if(carry == 0) break;
-	    else _a = 0;
+	  uint[] r = cast(uint[]) result._aval;
 	}
-	for(size_t j=0; j!=r.length-i; ++j) {
-	  if(j < b.length) {     // initialize and sign extend if required
-	    _b = b[j];
-	    if(bNegative) {
-	      static if(T.store_t.sizeof == 8) {
+
+	static if(this.SIZE <= 16) {
+	  store_t[] a = this._aval;
+	}
+	else {
+	  uint[] a = cast(uint[]) this._aval;
+	}
+
+	static if(other.SIZE <= 16) {
+	  other.store_t[] b = other._aval;
+	}
+	else {
+	  uint[] b = cast(uint[]) other._aval;
+	}
+
+	bool aNegative = this.aValSigned();
+	bool bNegative = other.aValSigned();
+
+	uint _a = void;
+	uint _b = void;
+	for(size_t i=0; i!=r.length; ++i) {
+	  uint carry = 0;
+	  if(i < a.length) {	     // initialize and sign extend if required
+	    _a = a[i];
+	    if(aNegative) {
+	      static if(store_t.sizeof == 8) {
 		// convert 64 bit mask to 32 bits
-		static if(T.SIZE % 64 <= 32) {
-		  if(j == b.length - 2)
-		    _b |= cast(uint) ~T.UMASK;
-		  if(j == b.length - 1)
-		    _b = uint.max;
+		static if(SIZE % 64 <= 32) {
+		  if(i == a.length - 2)
+		    _a |= cast(uint) ~UMASK;
+		  if(i == a.length - 1)
+		    _a = uint.max;
 		}
 		else {
-		  if(j == b.length - 1)
-		    _b |= cast(uint) ~(T.UMASK >>> 32);
+		  if(i == a.length - 1)
+		    _a |= cast(uint) ~(UMASK >>> 32);
 		}
 	      }
 	      else {
-		if(j == b.length - 1)
-		  _b |= ~(cast(uint) T.UMASK);
+		if(i == a.length - 1)
+		  _a |= ~(cast(uint) UMASK);
 	      }
 	    }
 	  }
 	  else {
-	    if(bNegative)
-	      _b = uint.max;
+	    if(aNegative)
+	      _a = uint.max;
 	    else
 	      if(carry == 0) break;
-	      else _b = 0;
+	      else _a = 0;
 	  }
+	  for(size_t j=0; j!=r.length-i; ++j) {
+	    if(j < b.length) {     // initialize and sign extend if required
+	      _b = b[j];
+	      if(bNegative) {
+		static if(T.store_t.sizeof == 8) {
+		  // convert 64 bit mask to 32 bits
+		  static if(T.SIZE % 64 <= 32) {
+		    if(j == b.length - 2)
+		      _b |= cast(uint) ~T.UMASK;
+		    if(j == b.length - 1)
+		      _b = uint.max;
+		  }
+		  else {
+		    if(j == b.length - 1)
+		      _b |= cast(uint) ~(T.UMASK >>> 32);
+		  }
+		}
+		else {
+		  if(j == b.length - 1)
+		    _b |= ~(cast(uint) T.UMASK);
+		}
+	      }
+	    }
+	    else {
+	      if(bNegative)
+		_b = uint.max;
+	      else
+		if(carry == 0) break;
+		else _b = 0;
+	    }
 
-	  ulong t = cast(ulong)carry + cast(ulong)r[i+j] +
-	    cast(ulong)_a * cast(ulong)_b;
-	  // writefln("i: %d, j: %d, carry: %X, r[i+j]: %X, _a: %X, _b: %X",
-	  //	       i, j, carry, r[i+j], _a, _b);
-	  r[i+j] = cast(typeof(r[i+j])) t;
-	  carry = cast(uint)(t >>> 32);
+	    ulong t = cast(ulong)carry + cast(ulong)r[i+j] +
+	      cast(ulong)_a * cast(ulong)_b;
+	    // writefln("i: %d, j: %d, carry: %X, r[i+j]: %X, _a: %X, _b: %X",
+	    //	       i, j, carry, r[i+j], _a, _b);
+	    r[i+j] = cast(typeof(r[i+j])) t;
+	    carry = cast(uint)(t >>> 32);
+	  }
 	}
-      }
 
-      result._aval[$-1] &= result.UMASK;
-      return result;
-    }
+	result._aval[$-1] &= result.UMASK;
+	return result;
+      }
 
     // Left Shift Assign
     public void opOpAssign(string op)(size_t shift)
@@ -2332,19 +2332,19 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
 
     // Concatenation
     public auto opBinary(string op, T)(T other)
-    if(isIntegral!T &&
-       (op == "~")) {
-      vec!T rhs = other;
-      return this ~ rhs;
-    }
+      if(isIntegral!T &&
+	 (op == "~")) {
+	vec!T rhs = other;
+	return this ~ rhs;
+      }
 
     public auto opBinary(string op, T)(T other)
-    if(isBitVector!T && (op == "~")) {
-      BitVec!(SIZE+T.SIZE) result = this;
-      result <<= T.SIZE;
-      result |= other;
-      return result;
-    }
+      if(isBitVector!T && (op == "~")) {
+	BitVec!(SIZE+T.SIZE) result = this;
+	result <<= T.SIZE;
+	result |= other;
+	return result;
+      }
 
     // int opApply(scope int delegate(ref bool) dg)
     // int opApply(scope int delegate(ref bit) dg) {
@@ -2675,6 +2675,141 @@ unittest {
       } catch (core.exception.AssertError) {
 	writefln(" Err :: Assertion failed for multiplication, bitwidth = %d, a = %d, b = %d, y = %b, y1 = %b", k, a, b, y, a_1*b_1);
 	writeln(typeid(typeof(y)));
+      }
+    }
+  }
+
+}
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+
+  ubvec!64[]   mubvec ;
+  ubvec!64[]   nubvec ;
+  ubvec!64[16] pubvec ;
+  mubvec.length = 16 ;
+  nubvec.length = 16 ;
+
+  for(uint i = 0 ; i < 16 ; ++i){
+    auto a_1 = uniform(0, 10000); 
+    auto b_1 = uniform(0, 10000); 
+    mubvec[i] = a_1 ;
+    nubvec[i] = b_1 ;
+    pubvec[i] = cast(ubvec!64) (mubvec[i] + nubvec[i]);
+    try {
+      assert(pubvec[i] == (a_1 + b_1));
+    } catch (core.exception.AssertError) {
+      writefln(" Err :: Assertion failed for array addition, bitwidth = %d",16);
+    }
+  }
+
+  for(uint i = 0 ; i < 16 ; ++i){
+    auto a_1 = uniform(0, 10000); 
+    auto b_1 = uniform(0, 10000); 
+    mubvec[i] = a_1 ;
+    nubvec[i] = b_1 ;
+    pubvec[i] = cast(ubvec!64) (mubvec[i] - nubvec[i]);
+    try {
+      assert(pubvec[i] == (a_1 - b_1));
+    } catch (core.exception.AssertError) {
+      writefln(" Err :: Assertion failed for array subtraction, bitwidth = %d",16);
+    }
+  }
+
+
+  for(uint i = 0 ; i < 16 ; ++i){
+    auto a_1 = uniform(0, 1000); 
+    auto b_1 = uniform(0, 1000); 
+    mubvec[i] = a_1 ;
+    nubvec[i] = b_1 ;
+    pubvec[i] = cast(ubvec!64) (mubvec[i] * nubvec[i]);
+    try {
+      assert(pubvec[i] == (a_1 * b_1));
+    } catch (core.exception.AssertError) {
+      writefln(" Err :: Assertion failed for array multiplication, bitwidth = %d",16);
+    }
+  }
+}
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k < 15 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    for(uint i = 0 ; i < 1000 ; ++i){
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a + b ;
+      try {
+	assert(y == (a_1 + b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for addition, bitwidth = %d",k);
+      }
+    }
+  }
+
+  bvec!8  a = cast(byte) 0xff ;
+  bvec!8  b = cast(byte) 0xff ;
+  bvec!9  y = a + b;
+  assert(y == -2) ;
+
+  y = a + b;
+
+  assert(y == -2) ;
+
+}
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k < 15 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    for(uint i = 0 ; i < 1000 ; ++i){
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a - b ;
+      try {
+	assert(y == (a_1 - b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for subtraction, bitwidth = %d",k);
+      }
+    }
+  }
+
+}
+
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k != 15 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    // static bvec!64     y ;
+    for(uint i = 0 ; i != 10; ++i){
+      auto a_1 = uniform(-1000, 1000); 
+      auto b_1 = uniform(-1000, 1000); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a * b ;
+      try {
+	assert(y == (a_1 * b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for multiplication, bitwidth = %d(i = %d) : a_1(%d), b_1(%d)",k,i,a_1,b_1);
       }
     }
   }
