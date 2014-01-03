@@ -2586,20 +2586,23 @@ alias UBitVec ubvec;
 alias LogicVec lvec;
 alias ULogicVec ulvec;
 
+
+
+
+/*    */
 unittest {
   import std.random ;
   import std.math ;
   import std.stdio ;
   for(ulong k = 1 ; k < 64 ; ++k){
-    static BitVec!63     a ; 
-    static BitVec!63     b ;  
-    static BitVec!64     y ;
+    static ubvec!63     a ; 
+    static ubvec!63     b ;  
     for(uint i = 0 ; i < 1000 ; ++i){
-      auto a_1 = uniform(0, pow(2,k)-1); 
-      auto b_1 = uniform(0, pow(2,k)-1); 
+      auto a_1 = uniform(0, (pow(2,k)-1)); 
+      auto b_1 = uniform(0, (pow(2,k)-1)); 
       a = a_1 ;
       b = b_1 ;
-      y = a + b ;
+      auto y = a + b ;
       try {
 	assert(y == (a_1 + b_1));
       } catch (core.exception.AssertError) {
@@ -2616,15 +2619,14 @@ unittest {
   import std.math ;
   import std.stdio ;
   for(ulong k = 1 ; k < 64 ; ++k){
-    static BitVec!63     a ; 
-    static BitVec!63     b ;  
-    static BitVec!64     y ;
+    static ubvec!63     a ; 
+    static ubvec!63     b ;  
     for(uint i = 0 ; i < 1000 ; ++i){
-      auto a_1 = uniform(0, pow(2,k)-1); 
-      auto b_1 = uniform(0, pow(2,k)-1); 
+      auto a_1 = uniform(0, (pow(2,k)-1)); 
+      auto b_1 = uniform(0, (pow(2,k)-1)); 
       a = a_1 ;
       b = b_1 ;
-      y = a - b ;
+      auto y = a - b ;
       try {
 	assert(y == (a_1 - b_1));
       } catch (core.exception.AssertError) {
@@ -2632,6 +2634,14 @@ unittest {
       }
     }
   }
+
+  ubvec!8  a = 0xff ;
+  ubvec!8  b = 0xff ;
+  ubvec!9  y = cast(ubvec!9)a + cast(ubvec!9)b;
+  assert(y == 510) ;
+
+  y = cast(ubvec!9)(a + b) ;
+  assert(y == 510) ;
 
 }
 
@@ -2641,12 +2651,12 @@ unittest {
   import std.math ;
   import std.stdio ;
   for(ulong k = 1 ; k != 33 ; ++k){
-    static BitVec!63     a ; 
-    static BitVec!63     b ;  
-    // static BitVec!64     y ;
+    static ubvec!63     a ; 
+    static ubvec!63     b ;  
+    // static ubvec!64     y ;
     for(uint i = 0 ; i != 1000; ++i){
-      auto a_1 = uniform(0, pow(2,k)-1); 
-      auto b_1 = uniform(0, pow(2,k)-1); 
+      auto a_1 = uniform(0, (pow(2,k)-1)); 
+      auto b_1 = uniform(0, (pow(2,k)-1)); 
       a = a_1 ;
       b = b_1 ;
       auto y = a * b ;
@@ -2659,3 +2669,98 @@ unittest {
   }
 
 }
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+
+  ubvec!63[]   mubvec ;
+  ubvec!63[]   nubvec ;
+  ubvec!63[16] pubvec ;
+  mubvec.length = 16 ;
+  nubvec.length = 16 ;
+}
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k < 64 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    for(uint i = 0 ; i < 1000 ; ++i){
+      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a + b ;
+      try {
+	assert(y == (a_1 + b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for addition, bitwidth = %d",k);
+      }
+    }
+  }
+
+}
+
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k < 64 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    for(uint i = 0 ; i < 1000 ; ++i){
+      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a - b ;
+      try {
+	assert(y == (a_1 - b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for subtraction, bitwidth = %d",k);
+      }
+    }
+  }
+
+  bvec!8  a = 0xff ;
+  bvec!8  b = 0xff ;
+  bvec!9  y = cast(bvec!9)a + cast(bvec!9)b;
+  assert(y == 510) ;
+
+  y = cast(bvec!9)(a + b) ;
+  assert(y == 510) ;
+
+}
+
+
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k != 33 ; ++k){
+    static bvec!63     a ; 
+    static bvec!63     b ;  
+    // static bvec!64     y ;
+    for(uint i = 0 ; i != 1000; ++i){
+      auto a_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      auto b_1 = uniform(-(pow(2,k)-1)>>2, (pow(2,k)-1)>>2); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = a * b ;
+      try {
+	assert(y == (a_1 * b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for multiplication, bitwidth = %d",k);
+      }
+    }
+  }
+
+}
+
