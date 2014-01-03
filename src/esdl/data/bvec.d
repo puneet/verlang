@@ -1,14 +1,14 @@
 // Written in the D programming language.
 
 /**
-   Copyright: Copyright Digital Mars 2007 - 2011.
-   Coverify Systems Technology 2011 - 2013
-   License:   Distributed under the Boost Software License, Version 1.0.
-   (See accompanying file LICENSE_1_0.txt or copy at
-   http://www.boost.org/LICENSE_1_0.txt)
-   Authors:   $(WEB digitalmars.com, Walter Bright),
-   $(WEB erdani.org, Andrei Alexandrescu),
-   Puneet Goel <puneet@coverify.com>
+Copyright: Copyright Digital Mars 2007 - 2011.
+           Coverify Systems Technology 2011 - 2013
+License:   Distributed under the Boost Software License, Version 1.0.
+           (See accompanying file LICENSE_1_0.txt or copy at
+           http://www.boost.org/LICENSE_1_0.txt)
+Authors:   $(WEB digitalmars.com, Walter Bright),
+	   $(WEB erdani.org, Andrei Alexandrescu),
+	   Puneet Goel <puneet@coverify.com>
 */
 
 // This file is part of esdl.
@@ -632,9 +632,9 @@ alias LOGIC_Z _z;
   return result;
 }
 
-alias vec!(false, true, 1LU) logic;
+alias vec!(false, true, 1) logic;
 
-alias vec!(false, false, 1LU) bit;
+alias vec!(false, false, 1) bit;
 
 template vec(T) if(is(T == bool)) {
   alias vec!(false, false, 1) vec;
@@ -1337,9 +1337,9 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
 	}
       }
       else {
-	retval._aval[0] = cast(ubyte) bt(cast(const(ulong*)) this._aval.ptr, i);
+	retval._aval[0] = cast(ubyte) bt(cast(const(size_t*)) this._aval.ptr, i);
 	static if(L) {
-	  retval._bval[0] = cast(ubyte) bt(cast(const(ulong*)) this._bval.ptr, i);
+	  retval._bval[0] = cast(ubyte) bt(cast(const(size_t*)) this._bval.ptr, i);
 	}
       }
       return retval;
@@ -1368,10 +1368,10 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
 	}
       }
       else {
-	if(b) bts((cast(ulong*) _aval.ptr), i);
-	else   btr((cast(ulong*) _aval.ptr), i);
+	if(b) bts((cast(size_t*) _aval.ptr), i);
+	else   btr((cast(size_t*) _aval.ptr), i);
 	static if(L) {
-	  btr((cast(ulong*) _bval.ptr), i);
+	  btr((cast(size_t*) _bval.ptr), i);
 	}
       }
       return b;
@@ -1408,21 +1408,21 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       else {
 	static if(other.IS4STATE) {
 	  static if(L) {
-	    if(other.aVal) bts((cast(ulong*) _aval.ptr), i);
-	    else btr((cast(ulong*) _aval.ptr), i);
-	    if(other.bVal) bts((cast(ulong*) _bval.ptr), i);
-	    else btr((cast(ulong*) _bval.ptr), i);
+	    if(other.aVal) bts((cast(size_t*) _aval.ptr), i);
+	    else btr((cast(size_t*) _aval.ptr), i);
+	    if(other.bVal) bts((cast(size_t*) _bval.ptr), i);
+	    else btr((cast(size_t*) _bval.ptr), i);
 	  }
 	  else {
-	    if(other.aVal && !(other.bVal)) bts((cast(ulong*) _aval.ptr), i);
-	    else btr((cast(ulong*) _aval.ptr), i);
+	    if(other.aVal && !(other.bVal)) bts((cast(size_t*) _aval.ptr), i);
+	    else btr((cast(size_t*) _aval.ptr), i);
 	  }
 	}
 	else {
-	  if(other.aVal) bts((cast(ulong*) _aval.ptr), i);
-	  else btr((cast(ulong*) _aval.ptr), i);
+	  if(other.aVal) bts((cast(size_t*) _aval.ptr), i);
+	  else btr((cast(size_t*) _aval.ptr), i);
 	  static if(L) {
-	    btr((cast(ulong*) _bval.ptr), i);
+	    btr((cast(size_t*) _bval.ptr), i);
 	  }
 	}
       }
