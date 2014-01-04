@@ -29,7 +29,7 @@ template rand(N...) {
   static if(CheckRandParams!N) {
     struct rand
     {
-      alias N maxBounds;
+      enum maxBounds = N;
     }
   }
 }
@@ -557,20 +557,50 @@ version(RBTREE) {
    void _esdl__setRands(size_t I=0, size_t CI=0, size_t RI=0, T)
      (T t, CstVecPrim[] values, ref RandGen rgen)
      if(is(T unused: RandomizableIntf) && is(T == class)) {
+       import std.traits;
        static if (I < t.tupleof.length) {
-	 static if(findRandAttr!(I, t) != -1) { // is @rand
-	   auto value = values[RI];
-	   alias typeof(t.tupleof[I]) L;
-	   if(value is null) {
-	     t.tupleof[I] = rgen.gen!L;
+	 alias typeof(t.tupleof[I]) L;
+	 static if (isArray!L) {
+	   enum RINDEX = findRandsAttr!(I, t);
+	   static if(RINDEX != -1) { // is @rand
+	     // make sure that there is only one dimension passed to @rand
+	     static assert(findRandsAttr!(I, t, 1) == -2);
+	     // enum ATTRS = __traits(getAttributes, t.tupleof[I]);
+	     // alias ATTRS[RINDEX] ATTR;
+	     t.tupleof[I].length = RINDEX;
+	     // auto value = values[RI];
+	     // if(value is null) {
+	     foreach(ref v; t.tupleof[I]) {
+	       import std.range;
+	       v = rgen.gen!(ElementType!L);
+	     }
+	     // t.tupleof[I] = rgen.gen!L;
+	     // }
+	     // else {
+	     //   // t.tupleof[I] = cast(L) value._value;
+	     // }
+	     // _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
 	   }
 	   else {
-	     t.tupleof[I] = cast(L) value._value;
+	     // _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
 	   }
-	   _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
 	 }
 	 else {
-	   _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
+	   static if(findRandAttr!(I, t) != -1) { // is @rand
+	     auto value = values[RI];
+	     if(value is null) {
+	       t.tupleof[I] = rgen.gen!L;
+	     }
+	     else {
+	       import esdl.data.bvec;
+	       bvec!64 temp = value._value;
+	       t.tupleof[I] = cast(L) temp;
+	     }
+	     _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
+	   }
+	   else {
+	     _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
+	   }
 	 }
        }
        else static if(is(T B == super)
@@ -606,20 +636,20 @@ template findRandAttr(size_t I, alias t) {
   enum int randAttr =
     findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
-    findRandsAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
+    findRandsAttrIndexed!(0, -1, 0, __traits(getAttributes, t.tupleof[I]));
   static assert(randsAttr == -1,
 		"Illegal use of @rand!N");
   enum int findRandAttr = randAttr;
 }
 
-template findRandsAttr(size_t I, alias t) {
+template findRandsAttr(size_t I, alias t, size_t R=0) {
   enum int randAttr =
     findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
-    findRandsAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
+    findRandsAttrIndexed!(0, -1, R, __traits(getAttributes, t.tupleof[I]));
   static assert(randAttr == -1,
 		"Illegal use of @rand");
-  enum int findRandAttr = randsAttr;
+  enum int findRandsAttr = randsAttr;
 }
 
 template findRandAttrIndexed(size_t C, int P, A...) {
@@ -636,17 +666,26 @@ template findRandAttrIndexed(size_t C, int P, A...) {
     }
 }
 
-template findRandsAttrIndexed(size_t C, int P, A...) {
+template findRandsAttrIndexed(size_t C, int P, size_t R, A...) {
   static if(A.length == 0) enum int findRandsAttrIndexed = P;
   else static if(is(A[0] unused: rand!M, M...)) {
       static assert(P == -1, "@rand used twice in the same declaration");
-      static if(A.length > 1)
-	enum int findRandsAttrIndexed = findRandsAttrIndexed!(C+1, C, A[1..$]);
-      else
-	enum int findRandsAttrIndexed = C;
+      static if(A.length > 1) {
+	enum int findRandsAttrIndexed =
+	  findRandsAttrIndexed!(C+1, C, R, A[1..$]);
+      }
+      else {
+	static if(R < M.length && R >= 0) {
+	  enum int findRandsAttrIndexed = M[R];
+	}
+	else {
+	  enum int findRandsAttrIndexed = -2;
+	}
+      }
     }
     else {
-      enum int findRandsAttrIndexed = findRandsAttrIndexed!(C+1, P, A[1..$]);
+      enum int findRandsAttrIndexed =
+	findRandsAttrIndexed!(C+1, P, R, A[1..$]);
     }
 }
 
