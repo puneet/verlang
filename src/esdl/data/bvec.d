@@ -600,8 +600,8 @@ alias BIT_1 _1;
 
 enum ulvec!1 LOGIC_0 = ulvec!1(0);
 enum ulvec!1 LOGIC_1 = ulvec!1(1);
-enum ulvec!1 LOGIC_X = cast(ulvec!1)BIN!"X";
-enum ulvec!1 LOGIC_Z = cast(ulvec!1)BIN!"Z";
+enum ulvec!1 LOGIC_X = cast(ulvec!1)bin!"X";
+enum ulvec!1 LOGIC_Z = cast(ulvec!1)bin!"Z";
 
 alias LOGIC_X _X;
 alias LOGIC_Z _Z;
@@ -611,21 +611,21 @@ alias LOGIC_Z _z;
 
 // BIN HEX and OCT could be simplyfied but for
 // http://d.puremagic.com/issues/show_bug.cgi?id=9143
-@property public auto BIN(string VAL)() {
+@property public auto bin(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 2)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 2)(0));
   return result;
 }
 
-@property public auto OCT(string VAL)() {
+@property public auto oct(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 8)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 8)(0));
   return result;
 }
 
-@property public auto HEX(string VAL)() {
+@property public auto hex(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 16)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 16)(0));
@@ -795,6 +795,17 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
       else return false;
     }
+
+   @property public bool isZ() {
+      static if(L) {
+	foreach(v; _bval) {
+	  if(v != 0) return true;
+	}
+	return false;
+      }
+      else return false;
+    }
+
 
     public this(T)(T other)
       if((isBitVector!T ||
@@ -2726,6 +2737,10 @@ unittest {
     mubvec[i] = a_1 ;
     nubvec[i] = b_1 ;
     pubvec[i] = cast(ubvec!64) (mubvec[i] * nubvec[i]);
+    writefln("%d\n",pubvec[0]);
+    writefln("%x\n",pubvec[0]);
+    writefln("%b\n",pubvec[0]);
+    writefln("%o\n",pubvec[0]);
     try {
       assert(pubvec[i] == (a_1 * b_1));
     } catch (core.exception.AssertError) {
@@ -2813,5 +2828,119 @@ unittest {
       }
     }
   }
+
+}
+
+
+unittest {
+
+    import std.stdio ;
+    import std.random ;
+
+    lvec!1 a1 = LOGIC_X ;
+    lvec!1 b1 = LOGIC_Z ;
+
+    lvec!3 a2 = LOGIC_X ;
+    lvec!3 b2 = LOGIC_Z ;
+
+    writefln("%b",a2) ;
+    writefln("%b",b2) ;
+
+    immutable uint N = 1024 ;
+    lvec!1024 wow ;
+    for(uint i = 0 ; i < N ; ++i){
+      int tmp = uniform(0, 4); 
+         
+      if      (tmp == 0) wow[i] = LOGIC_X ;
+      else if (tmp == 1) wow[i] = LOGIC_Z ;
+      else if (tmp == 2) wow[i] = LOGIC_1 ;
+      else if (tmp == 3) wow[i] = LOGIC_0 ;
+      else   assert(0);
+
+    }
+
+    writeln(" Err :: Issue in display")  ;
+    writefln("binary : %b\n",wow)        ;
+    writefln("string : %s\n",wow)        ;
+    writefln("hexadecimal : %x\n",wow)   ;
+    writefln("octal : %o\n",wow)         ;
+    writefln("decimal : %d\n",wow)       ;
+
+    writefln("%d",wow.length) ;
+
+    static lvec!4 a3 ;
+    static lvec!4 b3 ;
+
+    a3[0] = LOGIC_X ;
+    a3[1] = 1       ;
+    a3[2] = 0       ;
+    a3[3] = LOGIC_Z ;
+
+    writefln("%b",a3) ;
+
+    assert(a3[0].isX);
+    assert(a3[1] == LOGIC_1);
+    assert(a3[2] == LOGIC_0);
+    assert(a3[3].isZ);
+    assert(isStr4State("X"));
+    assert(isStr4State("Z"));
+    assert(!a3[1].isX);
+    assert(!a3[2].isX);
+    assert(!a3[1].isZ);
+    assert(!a3[2].isZ);
+ 
+    lvec!64 a4 ;
+    a4.randomize();
+    writefln("%b",a4) ;
+
+    lvec!64 a5 = ~a4 ;
+    writefln("%b",a5) ;
+    
+    lvec!64 a6 = !a4 ;
+    writefln("%b",a6) ;
+
+    lvec!64 [] x ;
+    x.length = 1024 ;
+
+
+}
+
+
+unittest {
+
+   import std.stdio ;
+
+   uint x_x = 5 ;
+   ubvec!4 a7 = hex!q{5} ;
+   ubvec!4 a7 = oct!q{5} ;
+
+   ubvec!4 a8 = bin!q{1010} ;
+
+   writefln("%b",a7);
+   writefln("%b",a8);
+
+/*
+   ubvec!64 a1 = 55 ;
+   float a1_f =  cast(float)(a1) ;
+   double a1_d =  cast(double)(a1) ;
+   ubvec!int a2 = 55 ;
+
+*/
+
+   bit x = 0b1 ;
+   ubvec!1 x_ubvec = cast(ubvec!1)x ;
+
+}
+
+unittest {
+
+   ubvec!1025 mfunc(ubvec!1024 p_, ubvec!1024 n_){
+      ubvec!1025 temp  = (p_ + n_);
+      return(temp);
+   }
+
+
+   ubvec!1025 x = mfunc(cast(ubvec!1024)1024,cast(ubvec!1024)100) ;
+
 
 }
