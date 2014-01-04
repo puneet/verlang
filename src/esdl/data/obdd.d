@@ -64,8 +64,8 @@ interface BddDomain
   string name();
   void index(int i);
   int index();
-  void realsize(BigInteger r);
-  BigInteger realsize();
+  void realsize(size_t r);
+  size_t realsize();
   void ivar(int[] iv);
   int[] ivar();
   void var(bdd v);
@@ -74,7 +74,7 @@ interface BddDomain
   public string getName();
   public int getIndex();
   public bdd domain();
-  public long size();
+  public size_t size();
   public bdd buildAdd(BddDomain that, long value);
   public bdd buildAdd(BddDomain that, int bits, long value);
   public bdd buildEquals(BddDomain that);
@@ -83,7 +83,7 @@ interface BddDomain
   public bdd varRange(long lo, long hi);
   public int varNum();
   public int[] vars();
-  public int ensureCapacity(BigInteger range);
+  public int ensureCapacity(size_t range);
   public string toString();
 }
 
@@ -102,7 +102,7 @@ abstract class BddVec
     return _bitvec;
   }
 
-  public @property ulong size()
+  public @property size_t size()
   {
     return _bitvec.length;
   }
@@ -112,7 +112,7 @@ abstract class BddVec
     _bitvec.length = l;
   }
 
-  public bdd getBit(ulong n)
+  public bdd getBit(size_t n)
   {
     return _bitvec[n];
   }
@@ -126,7 +126,7 @@ abstract class BddVec
   public BddVec dup();
   public BddVec copy();
   public BddVec coerceSign();
-  public BddVec coerce(ulong bitnum);
+  public BddVec coerce(size_t bitnum);
   public bool isConst();
   public long val();
   public void free();
@@ -255,9 +255,9 @@ abstract class BddVec
   public int div(long c, ref BddVec res, ref BddVec rem);
   public BddVec div(BddVec rhs);
   public int div(BddVec rhs, ref BddVec result, ref BddVec remainder);
-  public BddVec shl(long pos, bdd c);
+  public BddVec shl(ptrdiff_t pos, bdd c);
   public BddVec shl(BddVec r, bdd c);
-  public BddVec shr(long pos, bdd c);
+  public BddVec shr(ptrdiff_t pos, bdd c);
   public BddVec shr(BddVec r, bdd c);
   public bdd lth(BddVec r);
   public bdd lte(BddVec r);
@@ -7898,20 +7898,20 @@ class Buddy
 
 
 
-  protected BddDomain createDomain(int a, BigInteger b)
+  protected BddDomain createDomain(int a, size_t b)
   {
     return new BddDomainImpl(a, b);
   }
 
-  public BddDomain extDomain(BigInteger domainSize)
+  public BddDomain extDomain(size_t domainSize)
   {
-    BigInteger[] domains = [domainSize];
+    size_t[] domains = [domainSize];
     return extDomain(domains)[0];
   }
 
   public BddDomain[] extDomain(int[] dom)
   {
-    auto a = new BigInteger[](dom.length);
+    auto a = new size_t[](dom.length);
     for(int i = 0; i < a.length; ++i)
       {
 	a[i] = dom[i];
@@ -7919,7 +7919,7 @@ class Buddy
     return extDomain(a);
   }
 
-  public BddDomain[] extDomain(BigInteger[] domainSizes)
+  public BddDomain[] extDomain(size_t[] domainSizes)
   {
     int offset = fdvarnum;
     int binoffset;
@@ -8084,7 +8084,7 @@ class Buddy
     protected int _index;
 
     /* The specified _domain(0...N-1) */
-    public BigInteger _realsize;
+    public size_t _realsize;
     /* Variable indices for the variable set */
     protected int[] _ivar;
     /* The BDD variable set.  Actually constructed in extDomain(), etc. */
@@ -8110,12 +8110,12 @@ class Buddy
       return _index;
     }
 
-    public override void realsize(BigInteger r)
+    public override void realsize(size_t r)
     {
       _realsize = r;
     }
 
-    public override BigInteger realsize()
+    public override size_t realsize()
     {
       return _realsize;
     }
@@ -8161,7 +8161,7 @@ class Buddy
     //   this._ivar.length = binsize;
     // }
 
-    this(int index, BigInteger bits)
+    this(int index, size_t bits)
     {
       import std.conv;
       if(bits <= 0)
@@ -8170,7 +8170,7 @@ class Buddy
 	}
       this._name = text(index);
       this._index = index;
-      this._realsize = 2L^^bits;
+      this._realsize = (cast(size_t) 2) ^^bits;
       this._ivar.length = bits;
     }
 
@@ -8207,9 +8207,9 @@ class Buddy
       return d;
     }
 
-    public override long size()
+    public override size_t size()
     {
-      return this.realsize;
+      return cast(size_t) this.realsize;
     }
 
     public override bdd buildAdd(BddDomain that, long value)
@@ -8306,7 +8306,7 @@ class Buddy
 
     public override bdd ithVar(BigInteger val)
     {
-      if(val < 0 || val> size())
+      if(val < 0 || val > size())
 	{
 	  throw new BddException(text(val, " is out of range"));
 	}
@@ -8368,7 +8368,7 @@ class Buddy
       return this.ivar;
     }
 
-    public override int ensureCapacity(BigInteger range)
+    public override int ensureCapacity(size_t range)
     {
       BigInteger calcsize = 2L;
       if(range < 0)
@@ -8590,19 +8590,19 @@ class Buddy
 
   /**** BIT VECTORS ****/
 
-  public BddVec createVec(ulong a, bool signed = false)
+  public BddVec createVec(size_t a, bool signed = false)
   {
     return new BddVecImpl(a, signed);
   }
 
-  public BddVec buildVec(ulong bitnum, bool b, bool signed = false)
+  public BddVec buildVec(size_t bitnum, bool b, bool signed = false)
   {
     BddVec v = createVec(bitnum, signed);
     v.initialize(b);
     return v;
   }
 
-  public BddVec buildVec(ulong bitnum, long val, bool signed = false)
+  public BddVec buildVec(size_t bitnum, long val, bool signed = false)
   {
     BddVec v = createVec(bitnum, signed);
     v.initialize(val);
@@ -8625,7 +8625,7 @@ class Buddy
     return buildVec(bits(), val, val < 0);
   }
 
-  public BddVec buildVec(ulong bitnum, int offset, int step, bool signed = false)
+  public BddVec buildVec(size_t bitnum, int offset, int step, bool signed = false)
   {
     BddVec v = createVec(bitnum, signed);
     v.initialize(offset, step);
@@ -8654,7 +8654,7 @@ class Buddy
     //   _bitvec = null;
     // }
 
-    protected this(ulong bitnum, bool signed = false)
+    protected this(size_t bitnum, bool signed = false)
     {
       _signed = signed;
       size = bitnum;
@@ -8800,7 +8800,7 @@ class Buddy
 	}
     }
 
-    public override BddVec coerce(ulong bitnum)
+    public override BddVec coerce(size_t bitnum)
     {
       BddVec dst = createVec(bitnum, this._signed);
       ulong minnum = min(bitnum, size);
@@ -9074,7 +9074,7 @@ class Buddy
 
     public override BddVec mul(BddVec rhs)
     {
-      ulong bitnum = size + rhs.size;
+      size_t bitnum = size + rhs.size;
       BddVec result = buildVec(bitnum, false);
       BddVec leftshifttmp = this.dup();
 
@@ -9083,12 +9083,12 @@ class Buddy
       foreach(ref r; rhs.bitvec)
 	{
 	  BddVec added = result.add(leftshift);
-	  for(ulong m=0; m < bitnum; ++m)
+	  for(size_t m=0; m < bitnum; ++m)
 	    {
 	      bdd tmpres = r.ite(added.bitvec[m], result.bitvec[m]);
 	      result.bitvec[m] = tmpres;
 	    }
-	  for(ulong m = bitnum-1; m >= 1; --m)
+	  for(size_t m = bitnum-1; m >= 1; --m)
 	    {
 	      leftshift.bitvec[m] = leftshift.bitvec[m-1];
 	    }
@@ -9105,7 +9105,7 @@ class Buddy
       BddVec zero = buildVec(divisor.size, false);
       BddVec sub = buildVec(divisor.size, false);
 
-      for(ulong n = 0; n < divisor.size; n++)
+      for(size_t n = 0; n < divisor.size; n++)
 	sub.bitvec[n] = isSmaller.ite(divisor.bitvec[n], zero.bitvec[n]);
 
       BddVec tmp = remainder.sub(sub);
@@ -9162,7 +9162,7 @@ class Buddy
     public override int div(BddVec rhs, ref BddVec result, ref BddVec remainder)
     {
 
-      ulong bitnum = size + rhs.size;
+      size_t bitnum = size + rhs.size;
       if(size != rhs.size)
 	// throw new BddException("Bit Vector sizes do not match");
 	bdd_error(BddError.BVEC_SIZE);
@@ -9208,15 +9208,15 @@ class Buddy
       return this.outer.one();
     }
 
-    public override BddVec shl(long pos, bdd c)
+    public override BddVec shl(ptrdiff_t pos, bdd c)
     {
-      ulong minnum = min(this.size, pos);
+      size_t minnum = min(this.size, pos);
       if(pos < 0)
 	throw new BddException();
 
       BddVec res = buildVec(size, false);
 
-      ulong n;
+      size_t n;
       for(n = 0; n < minnum; n++)
 	res.bitvec[n] = c.dup();
 
@@ -9268,9 +9268,9 @@ class Buddy
     }
 
 
-    public override BddVec shr(long pos, bdd c)
+    public override BddVec shr(ptrdiff_t pos, bdd c)
     {
-      long maxnum = max(0, size - pos);
+      size_t maxnum = max(0, size - pos);
       if(pos < 0)
 	throw new BddException();
 
