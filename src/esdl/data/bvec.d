@@ -902,6 +902,20 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
     }
 
+    public void randomize(URNG)(ref URNG urng) {
+      import std.random;
+      for(size_t i=0; i!=STORESIZE; ++i) {
+	this._aval[i] = uniform!store_t(urng);
+	static if(L) this._bval[i] = 0;
+      }
+      if(aValSigned) this._aval[$-1] |= SMASK;
+      else           this._aval[$-1] &= UMASK;
+      static if(L) {
+	if(bValSigned) this._bval[$-1] |= SMASK;
+	else           this._bval[$-1] &= UMASK;
+      }
+    }
+
     public bool aValSigned() {
       static if(S) {
 	if((this._aval[$-1] &

@@ -30,6 +30,8 @@ template rand(N...) {
     struct rand
     {
       enum maxBounds = N;
+      // this(int N) {
+      // }
     }
   }
 }
@@ -159,13 +161,18 @@ struct RandGen
     }
     else static if(isBitVector!T) {
 	T result;
-	result.randomize();
+	result.randomize(_gen);
 	return result;
       }
       else {
 	static assert(false);
       }
   }
+
+  @property public auto gen(T1, T2)(T1 a, T2 b)
+    if(isIntegral!T1 && isIntegral!T2) {
+      return uniform(a, b, _gen);
+    }
 }
 
 
@@ -560,14 +567,14 @@ version(RBTREE) {
        import std.traits;
        static if (I < t.tupleof.length) {
 	 alias typeof(t.tupleof[I]) L;
-	 static if (isArray!L) {
-	   enum RINDEX = findRandsAttr!(I, t);
-	   static if(RINDEX != -1) { // is @rand
+	 static if (isDynamicArray!L) {
+	   enum RLENGTH = findRandsAttr!(I, t);
+	   static if(RLENGTH != -1) { // is @rand
 	     // make sure that there is only one dimension passed to @rand
 	     static assert(findRandsAttr!(I, t, 1) == -2);
 	     // enum ATTRS = __traits(getAttributes, t.tupleof[I]);
-	     // alias ATTRS[RINDEX] ATTR;
-	     t.tupleof[I].length = RINDEX;
+	     // alias ATTRS[RLENGTH] ATTR;
+	     t.tupleof[I].length = rgen.gen(0, RLENGTH+1);
 	     // auto value = values[RI];
 	     // if(value is null) {
 	     foreach(ref v; t.tupleof[I]) {
@@ -579,24 +586,36 @@ version(RBTREE) {
 	     // else {
 	     //   // t.tupleof[I] = cast(L) value._value;
 	     // }
+
+	     // FIXME
+	     // Once we put in foreach constraints, RI should get incremented too
+	     _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
 	     // _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
 	   }
 	   else {
-	     // _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
+	     _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);
 	   }
 	 }
 	 else {
 	   static if(findRandAttr!(I, t) != -1) { // is @rand
-	     auto value = values[RI];
-	     if(value is null) {
-	       t.tupleof[I] = rgen.gen!L;
+	     static if(isStaticArray!L) {
+	       foreach(ref v; t.tupleof[I]) {
+		 import std.range;
+		 v = rgen.gen!(ElementType!L);
+	       }
 	     }
 	     else {
-	       import esdl.data.bvec;
-	       bvec!64 temp = value._value;
-	       t.tupleof[I] = cast(L) temp;
+	       auto value = values[RI];
+	       if(value is null) {
+		 t.tupleof[I] = rgen.gen!L;
+	       }
+	       else {
+		 import esdl.data.bvec;
+		 bvec!64 temp = value._value;
+		 t.tupleof[I] = cast(L) temp;
+	       }
+	       _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
 	     }
-	     _esdl__setRands!(I+1, CI+1, RI+1) (t, values, rgen);
 	   }
 	   else {
 	     _esdl__setRands!(I+1, CI+1, RI) (t, values, rgen);

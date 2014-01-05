@@ -5,10 +5,12 @@ import esdl.data.bvec;
 
 class Bar: Randomizable
 {
-  @rand!160 byte[] foo;
+  @rand!16 byte[] foo;
+  @rand byte[8] bar;
 
   void display() {
     writeln("foo: ", foo);
+    writeln("bar: ", bar);
   }
 }
 
