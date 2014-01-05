@@ -3139,10 +3139,10 @@ unittest {
     assert(!isStr4State("1"));
     assert(!isStr4State("0"));
 
-    bvec!8  x1 ; x1.randomize();
-    ubvec!8 x2 ; x2.randomize();
-    lvec!8  x3 ; x3.randomize();
-    ulvec!8 x4 ; x4.randomize();
+    bvec!8  x1 ; x1.randomize(); x1.reverse();
+    ubvec!8 x2 ; x2.randomize(); x2.reverse();
+    lvec!8  x3 ; x3.randomize(); x3.reverse();
+    ulvec!8 x4 ; x4.randomize(); x4.reverse();
 
 
 }
@@ -3433,12 +3433,749 @@ unittest {
 
 unittest {
 
+   import std.stdio ;
+      try {
    lvec!1 a = bin!q{Z} ;
    assert(a.isZ());
    assert(!a.isX());
    assert(a != LOGIC_1);
    assert(a != LOGIC_0);
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for a Test ");
+      }
+
 
 }
+
+unittest {
+
+   alias bvec!8 array ;
+
+   array[]  mem ;
+
+   mem.length = 1024 ;
+   mem.length = 2048 ;
+   mem.length = 1024 ;
+
+   bvec!8[string][]  hash ;
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   bvec!8 lsb = bin!q{00000000} ;
+   bvec!8 msb = bin!q{11111111} ;
+   bvec!16 concat = msb ~ lsb ;
+   assert(concat == bin!q{1111111100000000});
+   assert(concat >  bin!q{1000000001111111});
+   assert(concat >= bin!q{1000000001111111});
+   assert(concat != bin!q{1000000001111111});
+
+   auto concat_1 = msb ~ lsb ;
+   assert(concat_1 == bin!q{1111111100000000});
+   assert(concat_1 >  bin!q{1000000001111111});
+   assert(concat_1 >= bin!q{1000000001111111});
+   assert(concat_1 != bin!q{1000000001111111});
+
+}
+
+unittest {
+
+   ubvec!8 lsb = bin!q{00000000} ;
+   ubvec!8 msb = bin!q{11111111} ;
+   ubvec!16 concat = msb ~ lsb ;
+   assert(concat == bin!q{1111111100000000});
+   assert(concat >  bin!q{1000000001111111});
+   assert(concat >= bin!q{1000000001111111});
+   assert(concat != bin!q{1000000001111111});
+
+   auto concat_1 = msb ~ lsb ;
+   assert(concat_1 == bin!q{1111111100000000});
+   assert(concat_1 >  bin!q{1000000001111111});
+   assert(concat_1 >= bin!q{1000000001111111});
+   assert(concat_1 != bin!q{1000000001111111});
+}
+
+// concat ~ does not work for lvec/ulvec 
+
+// unittest {
+// 
+//    lvec!8 lsb = bin!q{11111111} ;
+//    lvec!8 msb = bin!q{11111111} ;
+//    auto concat = msb ~ lsb ;
+// 
+// }
+ 
+// unittest {
+// 
+//    ulvec!8 lsb = bin!q{11111111} ;
+//    ulvec!8 msb = bin!q{11111111} ;
+//    auto concat = msb ~ lsb ;
+// 
+// }
+
+unittest {
+
+   ubvec!16 mbvec    = bin!q{1111111111111111};
+
+   ubvec!8  mbvec_8      = cast(ubvec!8) mbvec ;
+   ubvec!16 mbvec_16     = cast(ubvec!16) mbvec ;
+   ubyte    mbvec_ubyte  = cast(ubyte) mbvec ;
+   uint     mbvec_uint   = cast(uint) mbvec ;
+   ushort   mbvec_ushort = cast(ushort) mbvec ;
+   ulong    mbvec_ulong  = cast(ulong) mbvec ;
+
+   byte     mbvec_byte   = cast(byte) mbvec ;
+   int      mbvec_int    = cast(int) mbvec ;
+   short    mbvec_short  = cast(short) mbvec ;
+   long     mbvec_long   = cast(long) mbvec ;
+/*
+   float    mbvec_float  = cast(float)  mbvec ;
+   double   mbvec_double = cast(double)  mbvec ;
+   real     mbvec_real   = cast(double)  mbvec ;
+*/
+}
+
+unittest {
+
+   bvec!16 mbvec    = bin!q{1111111111111111};
+
+   bvec!8  mbvec_8      = cast(bvec!8) mbvec ;
+   bvec!16 mbvec_16     = cast(bvec!16) mbvec ;
+   ubyte    mbvec_ubyte  = cast(ubyte) mbvec ;
+   uint     mbvec_uint   = cast(uint) mbvec ;
+   ushort   mbvec_ushort = cast(ushort) mbvec ;
+   ulong    mbvec_ulong  = cast(ulong) mbvec ;
+
+   byte     mbvec_byte   = cast(byte) mbvec ;
+   int      mbvec_int    = cast(int) mbvec ;
+   short    mbvec_short  = cast(short) mbvec ;
+   long     mbvec_long   = cast(long) mbvec ;
+
+}
+
+
+unittest {
+
+   lvec!16 mlvec    = bin!q{1111111111111111};
+
+   lvec!8  mlvec_8      = cast(lvec!8) mlvec ;
+   lvec!16 mlvec_16     = cast(lvec!16) mlvec ;
+   ubyte    mlvec_ubyte  = cast(ubyte) mlvec ;
+   uint     mlvec_uint   = cast(uint) mlvec ;
+   ushort   mlvec_ushort = cast(ushort) mlvec ;
+   ulong    mlvec_ulong  = cast(ulong) mlvec ;
+
+   byte     mlvec_byte   = cast(byte) mlvec ;
+   int      mlvec_int    = cast(int) mlvec ;
+   short    mlvec_short  = cast(short) mlvec ;
+   long     mlvec_long   = cast(long) mlvec ;
+
+}
+
+unittest {
+
+   ulvec!16 mlvec    = bin!q{1111111111111111};
+
+   ulvec!8  mlvec_8      = cast(ulvec!8) mlvec ;
+   ulvec!16 mlvec_16     = cast(ulvec!16) mlvec ;
+   ubyte    mlvec_ubyte  = cast(ubyte) mlvec ;
+   uint     mlvec_uint   = cast(uint) mlvec ;
+   ushort   mlvec_ushort = cast(ushort) mlvec ;
+   ulong    mlvec_ulong  = cast(ulong) mlvec ;
+
+   byte     mlvec_byte   = cast(byte) mlvec ;
+   int      mlvec_int    = cast(int) mlvec ;
+   short    mlvec_short  = cast(short) mlvec ;
+   long     mlvec_long   = cast(long) mlvec ;
+
+}
+
+
+unittest {
+
+   import std.complex ;
+   import std.stdio ;
+
+   alias  bvec!16 mtype ;
+
+   mtype rbvec_1 = hex!q{5} ;
+   mtype ibvec_1 = hex!q{5} ;
+   auto c_1 = complex!(mtype) (rbvec_1,ibvec_1);
+
+   mtype rbvec_2 = hex!q{5} ;
+   mtype ibvec_2 = hex!q{5} ;
+   auto c_2 = complex!(mtype) (rbvec_2,ibvec_2);
+
+   { 
+      auto c_3 = c_1 + c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 - c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 * c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 / c_2 ; 
+      writefln("%f",c_3);
+      writefln("%s",c_3);
+   }
+
+
+}
+
+unittest {
+
+   import std.complex ;
+   import std.stdio ;
+
+   alias  ubvec!16 mtype ;
+
+   mtype rbvec_1 = hex!q{5} ;
+   mtype ibvec_1 = hex!q{5} ;
+   auto c_1 = complex!(mtype) (rbvec_1,ibvec_1);
+
+   mtype rbvec_2 = hex!q{5} ;
+   mtype ibvec_2 = hex!q{5} ;
+   auto c_2 = complex!(mtype) (rbvec_2,ibvec_2);
+
+   { 
+      auto c_3 = c_1 + c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 - c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 * c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 / c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+
+}
+
+
+
+
+unittest {
+
+   import std.stdio ;
+
+   bvec!8 msb = bin!q{11111111} ;
+   bvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   bvec!73  concat_1 = concat + concat ;
+   bvec!144 concat_2 = concat * concat ;
+            concat_2 = concat - concat ;
+            concat_2 = concat | concat ;
+            concat_2 = concat || concat ;
+            concat_2 = concat & concat ;
+            concat_2 = concat && concat ;
+            concat_2 = concat ^ concat ;
+            concat_2 = !concat ;
+            concat_2 = ~concat ;
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ubvec!8 msb = bin!q{11111111} ;
+   ubvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   ubvec!73  concat_1 = concat + concat ;
+   ubvec!144 concat_2 = concat * concat ;
+             concat_2 = concat - concat ;
+             concat_2 = concat | concat ;
+             concat_2 = concat || concat ;
+             concat_2 = concat & concat ;
+             concat_2 = concat && concat ;
+             concat_2 = concat ^ concat ;
+             concat_2 = !concat ;
+             concat_2 = ~concat ;
+}
+
+/*
+unittest {
+
+   import std.stdio ;
+
+   lvec!8 msb = bin!q{11111111} ;
+   lvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   lvec!73  concat_1 = concat + concat ;
+   lvec!144 concat_2 = concat * concat ;
+            concat_2 = concat - concat ;
+            concat_2 = concat | concat ;
+            concat_2 = concat || concat ;
+            concat_2 = concat & concat ;
+            concat_2 = concat && concat ;
+            concat_2 = concat ^ concat ;
+            concat_2 = !concat ;
+            concat_2 = ~concat ;
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ulvec!8 msb = bin!q{11111111} ;
+   ulvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   ulvec!73  concat_1 = concat + concat ;
+   ulvec!144 concat_2 = concat * concat ;
+             concat_2 = concat - concat ;
+             concat_2 = concat | concat ;
+             concat_2 = concat || concat ;
+             concat_2 = concat & concat ;
+             concat_2 = concat && concat ;
+             concat_2 = concat ^ concat ;
+             concat_2 = !concat ;
+             concat_2 = ~concat ;
+}
+*/
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static ubvec!N[] nbvec ;
+   static ubvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ubvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static ubvec!N[] nbvec ;
+   static ubvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ubvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static bvec!N[] nbvec ;
+   static bvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(bvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static bvec!N[] nbvec ;
+   static bvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(bvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static ulvec!N[] nbvec ;
+   static ulvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ulvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static ulvec!N[] nbvec ;
+   static ulvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ulvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static lvec!N[] nbvec ;
+   static lvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(lvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static lvec!N[] nbvec ;
+   static lvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(lvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+
+
+unittest {
+
+   bvec!16 [1024] a ;
+   bvec!16 [1024] b ;
+   bvec!17 [1024] y ;
+
+   foreach(ushort i ; a){
+      a[i] = i ;
+      b[i] = i ;
+      y[i] = a[i] + b[i] ;
+      y[i] = a[i] - b[i] ;  
+      y[i] = a[i] | b[i] ;  
+      y[i] = a[i] || b[i] ;  
+      y[i] = a[i] & b[i] ;  
+      y[i] = a[i] && b[i] ;  
+      y[i] = a[i] ^ b[i] ;  
+      y[i] = !b[i] ;  
+      y[i] = ~b[i] ;  
+      y[i] = b[i] >> 1;  
+      y[i] = b[i] << 1;  
+      y[i] = b[i] >>> 1;  
+   }
+
+}
+
+unittest {
+
+   ubvec!16 [1024] a ;
+   ubvec!16 [1024] b ;
+   ubvec!17 [1024] y ;
+
+   foreach(ushort i ; a){
+      a[i] = i ;
+      b[i] = i ;
+      y[i] = a[i] + b[i] ;
+      y[i] = a[i] - b[i] ;  
+      y[i] = a[i] | b[i] ;  
+      y[i] = a[i] || b[i] ;  
+      y[i] = a[i] & b[i] ;  
+      y[i] = a[i] && b[i] ;  
+      y[i] = a[i] ^ b[i] ;  
+      y[i] = !b[i] ;  
+      y[i] = ~b[i] ;  
+      y[i] = b[i] << 1;  
+      y[i] = b[i] >>> 1;  
+   }
+
+}
+
+unittest {
+
+   lvec!16 [1024] a ;
+   lvec!16 [1024] b ;
+   lvec!17 [1024] y ;
+
+   foreach(lvec!16 i ; a){
+      a[cast(ulong)i] = i ;
+      b[cast(ulong)i] = i ;
+      y[cast(ulong)i] = a[cast(ulong)i] + b[cast(ulong)i] ;
+      y[cast(ulong)i] = a[cast(ulong)i] - b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] | b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] || b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] & b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] && b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] ^ b[cast(ulong)i] ;  
+      y[cast(ulong)i] = !b[cast(ulong)i] ;  
+      y[cast(ulong)i] = ~b[cast(ulong)i] ;  
+      y[cast(ulong)i] = b[cast(ulong)i] >> 1;  
+      y[cast(ulong)i] = b[cast(ulong)i] << 1;  
+   }
+
+}
+
+unittest {
+
+   ulvec!16 [1024] a ;
+   ulvec!16 [1024] b ;
+   ulvec!17 [1024] y ;
+
+   foreach(ulvec!16 i ; a){
+      a[cast(ulong)i] = i ;
+      b[cast(ulong)i] = i ;
+      y[cast(ulong)i] = a[cast(ulong)i] + b[cast(ulong)i] ;
+      y[cast(ulong)i] = a[cast(ulong)i] - b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] | b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] || b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] & b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] && b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] ^ b[cast(ulong)i] ;  
+      y[cast(ulong)i] = !b[cast(ulong)i] ;  
+      y[cast(ulong)i] = ~b[cast(ulong)i] ;  
+      y[cast(ulong)i] = b[cast(ulong)i] << 1;  
+   }
+
+}
+
+unittest {
+
+   bvec!65 x_1 = 0xFFFFFF ;
+   bvec!65 x_2 = x_1 >> 1 ;
+   bvec!64 x_3 = cast(bvec!64) x_2 ;
+   bvec!64 x_4 = x_3 >> 1 ;
+ 
+
+}
+
 
 
