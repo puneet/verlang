@@ -600,8 +600,8 @@ alias BIT_1 _1;
 
 enum ulvec!1 LOGIC_0 = ulvec!1(0);
 enum ulvec!1 LOGIC_1 = ulvec!1(1);
-enum ulvec!1 LOGIC_X = cast(ulvec!1)BIN!"X";
-enum ulvec!1 LOGIC_Z = cast(ulvec!1)BIN!"Z";
+enum ulvec!1 LOGIC_X = cast(ulvec!1)bin!"X";
+enum ulvec!1 LOGIC_Z = cast(ulvec!1)bin!"Z";
 
 alias LOGIC_X _X;
 alias LOGIC_Z _Z;
@@ -611,21 +611,21 @@ alias LOGIC_Z _z;
 
 // BIN HEX and OCT could be simplyfied but for
 // http://d.puremagic.com/issues/show_bug.cgi?id=9143
-@property public auto BIN(string VAL)() {
+@property public auto bin(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 2)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 2)(0));
   return result;
 }
 
-@property public auto OCT(string VAL)() {
+@property public auto oct(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 8)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 8)(0));
   return result;
 }
 
-@property public auto HEX(string VAL)() {
+@property public auto hex(string VAL)() {
   enum bool L = isStr4State(VAL);
   alias vec!(true, L, stringBitSize(VAL, 16)) vector_t;
   vector_t result = vector_t(vec!(true, L, VAL, 16)(0));
@@ -795,6 +795,17 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
       else return false;
     }
+
+   @property public bool isZ() {
+      static if(L) {
+	foreach(v; _bval) {
+	  if(v != 0) return true;
+	}
+	return false;
+      }
+      else return false;
+    }
+
 
     public this(T)(T other)
       if((isBitVector!T ||
@@ -2542,6 +2553,30 @@ unittest {
 
 }
 
+unittest {
+  import std.random ;
+  import std.math ;
+  import std.stdio ;
+  for(ulong k = 1 ; k < 64 ; ++k){
+    static ubvec!65     a ; 
+    static ubvec!65     b ;  
+    for(uint i = 0 ; i < 1000 ; ++i){
+      auto a_1 = uniform(0, (pow(2,k)-1)); 
+      auto b_1 = uniform(0, (pow(2,k)-1)); 
+      a = a_1 ;
+      b = b_1 ;
+      auto y = cast(ubvec!65) (a + b) ;
+      try {
+	assert(y == (a_1 + b_1));
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for addition, bitwidth = %d",k);
+      }
+    }
+  }
+
+}
+
+
 
 unittest {
   import std.random ;
@@ -2573,7 +2608,6 @@ unittest {
   assert(y == 510) ;
 
 }
-
 
 unittest {
   import std.random ;
@@ -2829,3 +2863,1333 @@ unittest {
   }
 
 }
+
+unittest {
+   import std.stdio ;
+
+   ulvec!8 a1  = bin!q{11111111} ; 
+   ulvec!8 a2  = hex!q{ff} ;  
+
+   ubyte a1_s = 0b11111111 ;
+   ubyte a2_s = 0b11111111 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{00000000} ; 
+   a2 = hex!q{0} ;  
+   a1_s = 0b00000000 ;
+   a2_s = 0b00000000 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{10101010} ; 
+   a2 = bin!q{10101010} ;  
+   a1_s = 0b10101010 ;
+   a2_s = 0b10101010 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+}
+
+
+unittest {
+   import std.stdio ;
+
+   lvec!8 a1 = bin!q{11111111} ; 
+   lvec!8 a2 = hex!q{ff} ;  
+
+   byte a1_s = cast(byte)0b11111111 ;
+   byte a2_s = cast(byte)0b11111111 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{00000000} ; 
+   a2 = bin!q{00000000} ;  
+   a1_s = cast(byte)0b00000000 ;
+   a2_s = cast(byte)0b00000000 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{10101010} ; 
+   a2 = bin!q{10101010} ;  
+   a1_s = cast(byte)0b10101010 ;
+   a2_s = cast(byte)0b10101010 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+}
+
+
+
+unittest {
+   import std.stdio ;
+
+   ubvec!8 a1 = bin!q{11111111} ; 
+   ubvec!8 a2 = hex!q{ff} ;  
+
+   ubyte a1_s = 0b11111111 ;
+   ubyte a2_s = 0b11111111 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{00000000} ; 
+   a2 = bin!q{00000000} ;  
+   a1_s = 0b00000000 ;
+   a2_s = 0b00000000 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{10101010} ; 
+   a2 = bin!q{10101010} ;  
+   a1_s = 0b10101010 ;
+   a2_s = 0b10101010 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{1} ; 
+   ubvec!1 a2_ = cast(ubvec!1)a1[0] ;
+   bvec!1 a3 = cast(bvec!1)a2_ ;
+   assert(a1[0] == a3);
+
+}
+
+unittest {
+   import std.stdio ;
+
+   bvec!8 a1 = bin!q{11111111} ; 
+   bvec!8 a2 = hex!q{ff} ;  
+
+   byte a1_s = cast(byte)0b11111111 ;
+   byte a2_s = cast(byte)0b11111111 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{00000000} ; 
+   a2 = bin!q{00000000} ;  
+   a1_s = cast(byte)0b00000000 ;
+   a2_s = cast(byte)0b00000000 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{10101010} ; 
+   a2 = bin!q{10101010} ;  
+   a1_s = cast(byte)0b10101010 ;
+   a2_s = cast(byte)0b10101010 ;
+
+   assert((a1_s + a1_s) == (a1 + a2));
+   assert((a1_s - a1_s) == (a1 - a2));
+   assert((a1_s * a1_s) == (a1 * a2));
+   assert((a1_s | a1_s) == (a1 | a2));
+   assert((a1_s || a1_s) == (a1 || a2));
+   assert((a1_s & a1_s) == (a1 & a2));
+   assert((a1_s && a1_s) == (a1 && a2));
+   assert((a1_s ^ a1_s) == (a1 ^ a2));
+   assert(!a1_s == !a1);
+   assert(~a1_s == ~a1);
+
+   a1 = bin!q{1} ; 
+   bvec!1 a2_ = cast(bvec!1)a1[0] ;
+   ubvec!1 a3 = cast(ubvec!1)a2_ ;
+   assert(a1[0] == a3);
+
+
+}
+
+
+unittest {
+
+   import std.stdio ;
+
+   lvec!8 a1 = bin!q{1} ; 
+   assert(a1 == LOGIC_1);   
+
+   a1 = bin!q{0};
+   assert(a1 == LOGIC_0);   
+
+   a1 = bin!q{X};
+   assert(a1.isX());   
+
+   a1 = bin!q{Z};
+   assert(a1.isZ());   
+
+   a1 = LOGIC_X ;
+   assert(a1.isX());   
+
+   a1 = LOGIC_Z ;
+   assert(a1.isZ());   
+
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ulvec!8 a1 = bin!q{1} ; 
+   assert(a1 == LOGIC_1);   
+
+   a1 = bin!q{0};
+   assert(a1 == LOGIC_0);   
+
+   a1 = bin!q{X};
+   assert(a1.isX());   
+
+   a1 = bin!q{Z};
+   assert(a1.isZ());   
+
+   a1 = LOGIC_X ;
+   assert(a1.isX());   
+
+   a1 = LOGIC_Z ;
+   assert(a1.isZ());   
+
+   a1 = bin!q{1} ; 
+   lvec!1 a2 = a1[0] ;
+   ulvec!1 a3 = a2 ;
+   assert(a1[0] == a3);
+}
+
+unittest {
+
+    assert(isStr4State("X"));
+    assert(isStr4State("Z"));
+    assert(!isStr4State("1"));
+    assert(!isStr4State("0"));
+
+    bvec!8  x1 ; x1.randomize(); x1.reverse();
+    ubvec!8 x2 ; x2.randomize(); x2.reverse();
+    lvec!8  x3 ; x3.randomize(); x3.reverse();
+    ulvec!8 x4 ; x4.randomize(); x4.reverse();
+
+
+}
+
+unittest {
+
+    import std.stdio ;
+
+    bvec!8 x1 = hex!q{5} ;
+    bvec!9 x2 = cast(bvec!9)x1 ;
+
+    ubvec!8 x3 = hex!q{5} ;
+    ubvec!9 x4 = cast(ubvec!9)x3 ;
+
+    x2 = cast(bvec!9) x4 ;
+
+    writefln("%d",x1);
+    writefln("%s",x1);
+    writefln("%x",x1);
+    writefln("%o",x1);
+    writefln("%b",x1);
+
+    writefln("%d",x3);
+    writefln("%s",x3);
+    writefln("%x",x3);
+    writefln("%o",x3);
+    writefln("%b",x3);
+
+}
+
+unittest {
+
+    import std.stdio ;
+
+    lvec!8 x1 = hex!q{5} ;
+    lvec!9 x2 = cast(lvec!9)x1 ;
+
+    ulvec!8 x3 = hex!q{5} ;
+    ulvec!9 x4 = cast(ulvec!9)x3 ;
+
+    x2 = cast(lvec!9) x4 ;
+
+    writefln("%d",x1);
+    writefln("%s",x1);
+    writefln("%x",x1);
+    writefln("%o",x1);
+    writefln("%b",x1);
+
+    writefln("%d",x3);
+    writefln("%s",x3);
+    writefln("%x",x3);
+    writefln("%o",x3);
+    writefln("%b",x3);
+
+    ulvec!4 x5 ;
+    x5[0] = LOGIC_0 ;
+    x5[1] = LOGIC_1 ;
+    x5[2] = LOGIC_X ;
+    x5[3] = LOGIC_Z ;
+
+    assert(x5[0] == LOGIC_0);
+    assert(x5[1] == LOGIC_1);
+    assert(x5[2].isX());
+    assert(x5[3].isZ());
+
+    lvec!4 x6 ;
+    x6[0] = LOGIC_0 ;
+    x6[1] = LOGIC_1 ;
+    x6[2] = LOGIC_X ;
+    x6[3] = LOGIC_Z ;
+
+    assert(x6[0] == LOGIC_0);
+    assert(x6[1] == LOGIC_1);
+    assert(x6[2].isX());
+    assert(x6[3].isZ());
+
+}
+
+unittest {
+
+    bvec!65 [] x1 ;
+    bvec!65 [] x2 ;
+
+    bvec!130 [16] y ; 
+    x1.length = 16 ;
+    x2.length = 16 ;
+ 
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] + x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] - x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] * x2[i] ;
+}
+
+unittest {
+
+    ubvec!8 [] x1 ;
+    ubvec!8 [] x2 ;
+
+    ubvec!16 [16] y ; 
+    x1.length = 16 ;
+    x2.length = 16 ;
+ 
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] + x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] - x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] * x2[i] ;
+
+}
+
+unittest {
+
+    lvec!65 [] x1 ;
+    lvec!65 [] x2 ;
+
+    lvec!130 [16] y ; 
+    x1.length = 16 ;
+    x2.length = 16 ;
+ 
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] + x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] - x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] * x2[i] ;
+}
+
+unittest {
+
+    ulvec!65 [] x1 ;
+    ulvec!65 [] x2 ;
+
+    ulvec!130 [16] y ; 
+    x1.length = 16 ;
+    x2.length = 16 ;
+ 
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] + x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] - x2[i] ;
+    for(uint i = 0 ; i < 16 ; ++i) y[i] = x1[i] * x2[i] ;
+}
+
+
+
+// ----- Following has Failed Test 
+
+unittest {
+
+   bvec!8 x1 = bin!q{11111111} ;
+   assert(cast(byte)x1 != 0) ;
+   assert(cast(byte)x1 == bin!q{11111111}) ;
+   assert(cast(byte)x1 == hex!q{ff}) ;
+   //assert(cast(byte)x1 > hex!q{f}) ;
+
+   ubvec!8 x2 = bin!q{11111111} ;
+   assert(cast(byte)x2 != 0) ;
+   assert(cast(byte)x2 == bin!q{11111111}) ;
+   assert(cast(byte)x2 == hex!q{ff}) ;
+   //assert(cast(byte)x2 > hex!q{f}) ;
+
+   lvec!8 x3 = bin!q{11111111} ;
+   assert(cast(byte)x3 != 0) ;
+   assert(cast(byte)x3 == bin!q{11111111}) ;
+   assert(cast(byte)x3 == hex!q{ff}) ;
+   //assert(cast(byte)x3 > hex!q{f}) ;
+
+   ulvec!8 x4 = bin!q{11111111} ;
+   assert(cast(byte)x4 != 0) ;
+   assert(cast(byte)x4 == bin!q{11111111}) ;
+   assert(cast(byte)x4 == hex!q{ff}) ;
+   //assert(cast(byte)x4 > hex!q{f}) ;
+
+   bvec!8 x5 = x1 >> bin!q{1} ;
+   assert(x5 == bin!q{1111111});
+
+   x5 = x1 << bin!q{1} ;
+   assert(x5 == bin!q{11111110});
+   x5 = x1 << hex!q{1} ;
+   assert(x5 == bin!q{11111110});
+
+   ubvec!8 x6 = x2 >>> bin!q{1} ;
+   //assert(x6 == bin!q{111111});
+
+   lvec!8 x7 = x3 >> bin!q{1} ;
+   assert(x7 == bin!q{111111});
+
+   x7 = x3 <<  bin!q{1} ;
+   assert(x7 == bin!q{1111110});
+   x7 = x3 <<  hex!q{1} ;
+   assert(x7 == bin!q{1111110});
+
+   ulvec!8 x8 = x4 >>> bin!q{1} ;
+
+}
+
+unittest {
+
+   ubvec!1025 mfunc(ubvec!1024 p_, ubvec!1024 n_){
+      ubvec!1025 temp  = (p_ + n_);
+      return(temp);
+   }
+
+   ubvec!1025 x = mfunc(cast(ubvec!1024)1024,cast(ubvec!1024)100) ;
+
+}
+
+
+unittest {
+    import std.random ;
+    import std.stdio ;
+    immutable uint N = 65 ;
+    lvec!65 wow ;
+    for(uint i = 0 ; i < N ; ++i){
+      int tmp = uniform(0, 4); 
+         
+      if      (tmp == 0) wow[i] = LOGIC_X ;
+      else if (tmp == 1) wow[i] = LOGIC_Z ;
+      else if (tmp == 2) wow[i] = LOGIC_1 ;
+      else if (tmp == 3) wow[i] = LOGIC_0 ;
+      else   assert(0);
+
+    }
+
+    writefln("binary : %b\n",wow)        ;
+    writefln("string : %s\n",wow)        ;
+    writefln("hexadecimal : %x\n",wow)   ;
+    writefln("octal : %o\n",wow)         ;
+    writefln("decimal : %d\n",wow)       ;
+
+}
+
+unittest {
+    import std.random ;
+    import std.stdio ;
+    immutable uint N = 65 ;
+    ulvec!65 wow ;
+    for(uint i = 0 ; i < N ; ++i){
+      int tmp = uniform(0, 4); 
+         
+      if      (tmp == 0) wow[i] = LOGIC_X ;
+      else if (tmp == 1) wow[i] = LOGIC_Z ;
+      else if (tmp == 2) wow[i] = LOGIC_1 ;
+      else if (tmp == 3) wow[i] = LOGIC_0 ;
+      else   assert(0);
+
+    }
+
+    writefln("binary : %b\n",wow)        ;
+    writefln("string : %s\n",wow)        ;
+    writefln("hexadecimal : %x\n",wow)   ;
+    writefln("octal : %o\n",wow)         ;
+    writefln("decimal : %d\n",wow)       ;
+
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   lvec!1024 a ; 
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_Z ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i].isZ()) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_X ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i].isX()) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_1 ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i] == LOGIC_1) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_0 ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i] == LOGIC_0) ;
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ulvec!1024 a ; 
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_Z ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i].isZ()) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_X ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i].isX()) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_1 ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i] == LOGIC_1) ;
+
+   for(uint i = 0 ; i < 1024 ; ++i) a[i] = LOGIC_0 ;
+   for(uint i = 0 ; i < 1024 ; ++i) assert(a[i] == LOGIC_0) ;
+
+}
+
+
+unittest {
+
+   import std.stdio ;
+      try {
+   lvec!1 a = bin!q{Z} ;
+   assert(a.isZ());
+   assert(!a.isX());
+   assert(a != LOGIC_1);
+   assert(a != LOGIC_0);
+      } catch (core.exception.AssertError) {
+	writefln(" Err :: Assertion failed for a Test ");
+      }
+
+
+}
+
+unittest {
+
+   alias bvec!8 array ;
+
+   array[]  mem ;
+
+   mem.length = 1024 ;
+   mem.length = 2048 ;
+   mem.length = 1024 ;
+
+   bvec!8[string][]  hash ;
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   bvec!8 lsb = bin!q{00000000} ;
+   bvec!8 msb = bin!q{11111111} ;
+   bvec!16 concat = msb ~ lsb ;
+   assert(concat == bin!q{1111111100000000});
+   assert(concat >  bin!q{1000000001111111});
+   assert(concat >= bin!q{1000000001111111});
+   assert(concat != bin!q{1000000001111111});
+
+   auto concat_1 = msb ~ lsb ;
+   assert(concat_1 == bin!q{1111111100000000});
+   assert(concat_1 >  bin!q{1000000001111111});
+   assert(concat_1 >= bin!q{1000000001111111});
+   assert(concat_1 != bin!q{1000000001111111});
+
+}
+
+unittest {
+
+   ubvec!8 lsb = bin!q{00000000} ;
+   ubvec!8 msb = bin!q{11111111} ;
+   ubvec!16 concat = msb ~ lsb ;
+   assert(concat == bin!q{1111111100000000});
+   assert(concat >  bin!q{1000000001111111});
+   assert(concat >= bin!q{1000000001111111});
+   assert(concat != bin!q{1000000001111111});
+
+   auto concat_1 = msb ~ lsb ;
+   assert(concat_1 == bin!q{1111111100000000});
+   assert(concat_1 >  bin!q{1000000001111111});
+   assert(concat_1 >= bin!q{1000000001111111});
+   assert(concat_1 != bin!q{1000000001111111});
+}
+
+// concat ~ does not work for lvec/ulvec 
+
+// unittest {
+// 
+//    lvec!8 lsb = bin!q{11111111} ;
+//    lvec!8 msb = bin!q{11111111} ;
+//    auto concat = msb ~ lsb ;
+// 
+// }
+ 
+// unittest {
+// 
+//    ulvec!8 lsb = bin!q{11111111} ;
+//    ulvec!8 msb = bin!q{11111111} ;
+//    auto concat = msb ~ lsb ;
+// 
+// }
+
+unittest {
+
+   ubvec!16 mbvec    = bin!q{1111111111111111};
+
+   ubvec!8  mbvec_8      = cast(ubvec!8) mbvec ;
+   ubvec!16 mbvec_16     = cast(ubvec!16) mbvec ;
+   ubyte    mbvec_ubyte  = cast(ubyte) mbvec ;
+   uint     mbvec_uint   = cast(uint) mbvec ;
+   ushort   mbvec_ushort = cast(ushort) mbvec ;
+   ulong    mbvec_ulong  = cast(ulong) mbvec ;
+
+   byte     mbvec_byte   = cast(byte) mbvec ;
+   int      mbvec_int    = cast(int) mbvec ;
+   short    mbvec_short  = cast(short) mbvec ;
+   long     mbvec_long   = cast(long) mbvec ;
+/*
+   float    mbvec_float  = cast(float)  mbvec ;
+   double   mbvec_double = cast(double)  mbvec ;
+   real     mbvec_real   = cast(double)  mbvec ;
+*/
+}
+
+unittest {
+
+   bvec!16 mbvec    = bin!q{1111111111111111};
+
+   bvec!8  mbvec_8      = cast(bvec!8) mbvec ;
+   bvec!16 mbvec_16     = cast(bvec!16) mbvec ;
+   ubyte    mbvec_ubyte  = cast(ubyte) mbvec ;
+   uint     mbvec_uint   = cast(uint) mbvec ;
+   ushort   mbvec_ushort = cast(ushort) mbvec ;
+   ulong    mbvec_ulong  = cast(ulong) mbvec ;
+
+   byte     mbvec_byte   = cast(byte) mbvec ;
+   int      mbvec_int    = cast(int) mbvec ;
+   short    mbvec_short  = cast(short) mbvec ;
+   long     mbvec_long   = cast(long) mbvec ;
+
+}
+
+
+unittest {
+
+   lvec!16 mlvec    = bin!q{1111111111111111};
+
+   lvec!8  mlvec_8      = cast(lvec!8) mlvec ;
+   lvec!16 mlvec_16     = cast(lvec!16) mlvec ;
+   ubyte    mlvec_ubyte  = cast(ubyte) mlvec ;
+   uint     mlvec_uint   = cast(uint) mlvec ;
+   ushort   mlvec_ushort = cast(ushort) mlvec ;
+   ulong    mlvec_ulong  = cast(ulong) mlvec ;
+
+   byte     mlvec_byte   = cast(byte) mlvec ;
+   int      mlvec_int    = cast(int) mlvec ;
+   short    mlvec_short  = cast(short) mlvec ;
+   long     mlvec_long   = cast(long) mlvec ;
+
+}
+
+unittest {
+
+   ulvec!16 mlvec    = bin!q{1111111111111111};
+
+   ulvec!8  mlvec_8      = cast(ulvec!8) mlvec ;
+   ulvec!16 mlvec_16     = cast(ulvec!16) mlvec ;
+   ubyte    mlvec_ubyte  = cast(ubyte) mlvec ;
+   uint     mlvec_uint   = cast(uint) mlvec ;
+   ushort   mlvec_ushort = cast(ushort) mlvec ;
+   ulong    mlvec_ulong  = cast(ulong) mlvec ;
+
+   byte     mlvec_byte   = cast(byte) mlvec ;
+   int      mlvec_int    = cast(int) mlvec ;
+   short    mlvec_short  = cast(short) mlvec ;
+   long     mlvec_long   = cast(long) mlvec ;
+
+}
+
+
+unittest {
+
+   import std.complex ;
+   import std.stdio ;
+
+   alias  bvec!16 mtype ;
+
+   mtype rbvec_1 = hex!q{5} ;
+   mtype ibvec_1 = hex!q{5} ;
+   auto c_1 = complex!(mtype) (rbvec_1,ibvec_1);
+
+   mtype rbvec_2 = hex!q{5} ;
+   mtype ibvec_2 = hex!q{5} ;
+   auto c_2 = complex!(mtype) (rbvec_2,ibvec_2);
+
+   { 
+      auto c_3 = c_1 + c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 - c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 * c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 / c_2 ; 
+      writefln("%f",c_3);
+      writefln("%s",c_3);
+   }
+
+
+}
+
+unittest {
+
+   import std.complex ;
+   import std.stdio ;
+
+   alias  ubvec!16 mtype ;
+
+   mtype rbvec_1 = hex!q{5} ;
+   mtype ibvec_1 = hex!q{5} ;
+   auto c_1 = complex!(mtype) (rbvec_1,ibvec_1);
+
+   mtype rbvec_2 = hex!q{5} ;
+   mtype ibvec_2 = hex!q{5} ;
+   auto c_2 = complex!(mtype) (rbvec_2,ibvec_2);
+
+   { 
+      auto c_3 = c_1 + c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 - c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 * c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+   { 
+      auto c_3 = c_1 / c_2 ; 
+      writefln("%f",c_3);
+      writefln("%e",c_3);
+      writefln("%s",c_3);
+   }
+
+
+}
+
+
+
+
+unittest {
+
+   import std.stdio ;
+
+   bvec!8 msb = bin!q{11111111} ;
+   bvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   bvec!73  concat_1 = concat + concat ;
+   bvec!144 concat_2 = concat * concat ;
+            concat_2 = concat - concat ;
+            concat_2 = concat | concat ;
+            concat_2 = concat || concat ;
+            concat_2 = concat & concat ;
+            concat_2 = concat && concat ;
+            concat_2 = concat ^ concat ;
+            concat_2 = !concat ;
+            concat_2 = ~concat ;
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ubvec!8 msb = bin!q{11111111} ;
+   ubvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   ubvec!73  concat_1 = concat + concat ;
+   ubvec!144 concat_2 = concat * concat ;
+             concat_2 = concat - concat ;
+             concat_2 = concat | concat ;
+             concat_2 = concat || concat ;
+             concat_2 = concat & concat ;
+             concat_2 = concat && concat ;
+             concat_2 = concat ^ concat ;
+             concat_2 = !concat ;
+             concat_2 = ~concat ;
+}
+
+/*
+unittest {
+
+   import std.stdio ;
+
+   lvec!8 msb = bin!q{11111111} ;
+   lvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   lvec!73  concat_1 = concat + concat ;
+   lvec!144 concat_2 = concat * concat ;
+            concat_2 = concat - concat ;
+            concat_2 = concat | concat ;
+            concat_2 = concat || concat ;
+            concat_2 = concat & concat ;
+            concat_2 = concat && concat ;
+            concat_2 = concat ^ concat ;
+            concat_2 = !concat ;
+            concat_2 = ~concat ;
+}
+
+unittest {
+
+   import std.stdio ;
+
+   ulvec!8 msb = bin!q{11111111} ;
+   ulvec!72 concat = msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ~ msb ;
+
+   assert(concat == hex!q{ffffffffffffffffff});
+   //assert(concat >  hex!q{ffff});
+   //assert(concat >= hex!q{ffff});
+   //assert(concat != hex!q{ffff});
+
+   ulvec!73  concat_1 = concat + concat ;
+   ulvec!144 concat_2 = concat * concat ;
+             concat_2 = concat - concat ;
+             concat_2 = concat | concat ;
+             concat_2 = concat || concat ;
+             concat_2 = concat & concat ;
+             concat_2 = concat && concat ;
+             concat_2 = concat ^ concat ;
+             concat_2 = !concat ;
+             concat_2 = ~concat ;
+}
+*/
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static ubvec!N[] nbvec ;
+   static ubvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ubvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static ubvec!N[] nbvec ;
+   static ubvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ubvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static bvec!N[] nbvec ;
+   static bvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(bvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static bvec!N[] nbvec ;
+   static bvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(bvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static ulvec!N[] nbvec ;
+   static ulvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ulvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   //for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static ulvec!N[] nbvec ;
+   static ulvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(ulvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 16 ;
+   static enum M = N*2 ;
+
+   static lvec!N[] nbvec ;
+   static lvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(lvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+unittest {
+
+   import std.random ;
+   import std.math ;
+   import std.stdio ;
+
+   static enum N = 65 ;
+   static enum M = N*2 ;
+
+   static lvec!N[] nbvec ;
+   static lvec!M[] mbvec ;
+
+   nbvec.length = 1024 ; 
+   mbvec.length = nbvec.length ; 
+
+   for(uint i = 0 ; i < 1024 ; ++i){
+      nbvec[i] = cast(lvec!N)(cast(ushort)uniform(0, 65535)) ;
+   } 
+
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] + nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] - nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] * nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] | nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] || nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] & nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] && nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] ^ nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = !nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = ~nbvec[i] ;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >> 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] << 1;  
+   for(uint i = 0 ; i < 1024 ; ++i) mbvec[i] = nbvec[i] >>> 1;  
+
+} 
+
+
+
+unittest {
+
+   bvec!16 [1024] a ;
+   bvec!16 [1024] b ;
+   bvec!17 [1024] y ;
+
+   foreach(ushort i ; a){
+      a[i] = i ;
+      b[i] = i ;
+      y[i] = a[i] + b[i] ;
+      y[i] = a[i] - b[i] ;  
+      y[i] = a[i] | b[i] ;  
+      y[i] = a[i] || b[i] ;  
+      y[i] = a[i] & b[i] ;  
+      y[i] = a[i] && b[i] ;  
+      y[i] = a[i] ^ b[i] ;  
+      y[i] = !b[i] ;  
+      y[i] = ~b[i] ;  
+      y[i] = b[i] >> 1;  
+      y[i] = b[i] << 1;  
+      y[i] = b[i] >>> 1;  
+   }
+
+}
+
+unittest {
+
+   ubvec!16 [1024] a ;
+   ubvec!16 [1024] b ;
+   ubvec!17 [1024] y ;
+
+   foreach(ushort i ; a){
+      a[i] = i ;
+      b[i] = i ;
+      y[i] = a[i] + b[i] ;
+      y[i] = a[i] - b[i] ;  
+      y[i] = a[i] | b[i] ;  
+      y[i] = a[i] || b[i] ;  
+      y[i] = a[i] & b[i] ;  
+      y[i] = a[i] && b[i] ;  
+      y[i] = a[i] ^ b[i] ;  
+      y[i] = !b[i] ;  
+      y[i] = ~b[i] ;  
+      y[i] = b[i] << 1;  
+      y[i] = b[i] >>> 1;  
+   }
+
+}
+
+unittest {
+
+   lvec!16 [1024] a ;
+   lvec!16 [1024] b ;
+   lvec!17 [1024] y ;
+
+   foreach(lvec!16 i ; a){
+      a[cast(ulong)i] = i ;
+      b[cast(ulong)i] = i ;
+      y[cast(ulong)i] = a[cast(ulong)i] + b[cast(ulong)i] ;
+      y[cast(ulong)i] = a[cast(ulong)i] - b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] | b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] || b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] & b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] && b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] ^ b[cast(ulong)i] ;  
+      y[cast(ulong)i] = !b[cast(ulong)i] ;  
+      y[cast(ulong)i] = ~b[cast(ulong)i] ;  
+      y[cast(ulong)i] = b[cast(ulong)i] >> 1;  
+      y[cast(ulong)i] = b[cast(ulong)i] << 1;  
+   }
+
+}
+
+unittest {
+
+   ulvec!16 [1024] a ;
+   ulvec!16 [1024] b ;
+   ulvec!17 [1024] y ;
+
+   foreach(ulvec!16 i ; a){
+      a[cast(ulong)i] = i ;
+      b[cast(ulong)i] = i ;
+      y[cast(ulong)i] = a[cast(ulong)i] + b[cast(ulong)i] ;
+      y[cast(ulong)i] = a[cast(ulong)i] - b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] | b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] || b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] & b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] && b[cast(ulong)i] ;  
+      y[cast(ulong)i] = a[cast(ulong)i] ^ b[cast(ulong)i] ;  
+      y[cast(ulong)i] = !b[cast(ulong)i] ;  
+      y[cast(ulong)i] = ~b[cast(ulong)i] ;  
+      y[cast(ulong)i] = b[cast(ulong)i] << 1;  
+   }
+
+}
+
+unittest {
+
+   bvec!65 x_1 = 0xFFFFFF ;
+   bvec!65 x_2 = x_1 >> 1 ;
+   bvec!64 x_3 = cast(bvec!64) x_2 ;
+   bvec!64 x_4 = x_3 >> 1 ;
+ 
+
+}
+
+
+
