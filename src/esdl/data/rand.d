@@ -357,30 +357,42 @@ template isRandomizable(T) {	// check if T is Randomizable
 }
 
 // Need to change this function to return only the count of @rand members
-public size_t _esdl__countMems(size_t I=0, size_t C=0, T)(T t)
+public size_t _esdl__countRands(size_t I=0, size_t C=0, T)(T t)
   if(is(T unused: RandomizableIntf)) {
     static if(I == t.tupleof.length) {
       static if(is(T B == super)
 		&& is(B[0] : RandomizableIntf)
 		&& is(B[0] == class)) {
 	B[0] b = t;
-	return _esdl__countMems!(0, C)(b);
+	return _esdl__countRands!(0, C)(b);
       }
       else {
 	return C;
       }
     }
     else {
+      import std.traits;
+      import std.range;
       // check for the integral members
       alias typeof(t.tupleof[I]) L;
       static if((isIntegral!L || isBitVector!L) &&
 		findRandAttr!(I, t) != -1) {
-	return _esdl__countMems!(I+1, C+1)(t);
+	return _esdl__countRands!(I+1, C+1)(t);
       }
+      else static if(isStaticArray!L && (isIntegral!(ElementType!L) ||
+					 isBitVector!(ElementType!L)) &&
+		     findRandAttr!(I, t) != -1) {
+	  return _esdl__countRands!(I+1, C+1)(t);
+	}
+      else static if(isDynamicArray!L && (isIntegral!(ElementType!L) ||
+					  isBitVector!(ElementType!L)) &&
+		     findRandsAttr!(I, t) != -1) {
+	  return _esdl__countRands!(I+1, C+1)(t);
+	}
       // ToDo -- Fixme -- Add code for array randomization here
-      else {
-	return _esdl__countMems!(I+1, C)(t);
-      }
+	else {
+	  return _esdl__countRands!(I+1, C)(t);
+	}
     }
   }
 
@@ -587,8 +599,8 @@ version(RBTREE) {
 
 	     // FIXME
 	     // Once we put in foreach constraints, RI should get incremented too
-	     _esdl__setRands!(I+1, CI+1, RI) (t, vecVals, rgen);
-	     // _esdl__setRands!(I+1, CI+1, RI+1) (t, vecVals, rgen);
+	     // _esdl__setRands!(I+1, CI+1, RI) (t, vecVals, rgen);
+	     _esdl__setRands!(I+1, CI+1, RI+1) (t, vecVals, rgen);
 	   }
 	   else {
 	     _esdl__setRands!(I+1, CI+1, RI) (t, vecVals, rgen);
@@ -654,8 +666,7 @@ template findRandAttr(size_t I, alias t) {
     findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
     findRandsAttrIndexed!(0, -1, 0, __traits(getAttributes, t.tupleof[I]));
-  static assert(randsAttr == -1,
-		"Illegal use of @rand!N");
+  static assert(randsAttr == -1, "Illegal use of @rand!N");
   enum int findRandAttr = randAttr;
 }
 
@@ -664,8 +675,7 @@ template findRandsAttr(size_t I, alias t, size_t R=0) {
     findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
     findRandsAttrIndexed!(0, -1, R, __traits(getAttributes, t.tupleof[I]));
-  static assert(randAttr == -1,
-		"Illegal use of @rand");
+  static assert(randAttr == -1,	"Illegal use of @rand");
   enum int findRandsAttr = randsAttr;
 }
 
@@ -729,7 +739,7 @@ public bool randomize(T) (ref T t)
     }
     else {
       if(t._cstRands.length is 0) {
-	auto randCount = _esdl__countMems(t);
+	auto randCount = _esdl__countRands(t);
 	t._cstRands.length = randCount;
       }
     }
