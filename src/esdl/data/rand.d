@@ -85,7 +85,13 @@ abstract class _ESDL__ConstraintBase
     return _cstEng._buddy.one();
   }
 
+  public string name() {
+    return _name;
+  }
+  
   abstract public CstBlock getCstExpr();
+  
+  public void applyMaxArrayLengthCst(ref bdd stageBDD, uint stage) {}
 }
 
 abstract class Constraint (string C) : _ESDL__ConstraintBase
@@ -99,26 +105,41 @@ abstract class Constraint (string C) : _ESDL__ConstraintBase
   // pragma(msg, _parseTree.capture);
 
   // Called by mixin to create functions out of parsed constraints
-  static char[] constraintFoo(string cst) {
+  static char[] constraintFoo(string CST)() {
     import esdl.data.cstx;
-    return translate(cst);
+    return translate(CST);
   }
 
   debug(CONSTRAINTS) {
-    pragma(msg, constraintFoo(C));
+    pragma(msg, constraintFoo!C());
   }
-}
+};
 
-class Constraint (string C, T) : Constraint!C
+class Constraint(string C, string NAME, T, S): Constraint!C
 {
   T _outer;
-  this(T t, ConstraintEngine eng, string name, uint index) {
+  S _outerD;
+  
+  this(T t, S s, ConstraintEngine eng, string name, uint index) {
     super(eng, name, index);
     _outer = t;
+    _outerD = s;
   }
   // This mixin writes out the bdd functions after parsing the
   // constraint string at compile time
-  mixin(constraintFoo(C));
+  static if(NAME == "_esdl__lengthConstraint") {
+    override public void applyMaxArrayLengthCst(ref bdd stageBDD, uint stage) {
+      _esdl__initLengthCsts(_outerD, stageBDD, stage);
+    }
+
+    override public CstBlock getCstExpr() {
+      auto cstExpr = new CstBlock;
+      return cstExpr;
+    }
+  }
+  else {
+    mixin(constraintFoo!C());
+  }
 }
 
 struct RandGen
@@ -177,6 +198,7 @@ struct RandGen
 public class ConstraintEngine {
   // Keep a list of constraints in the class
   _ESDL__ConstraintBase cstList[];
+  _ESDL__ConstraintBase arrayMaxLengthCst;
   // ParseTree parseList[];
   RandGen _rgen;
   Buddy _buddy;
@@ -299,6 +321,11 @@ public class ConstraintEngine {
 	  stageBDD &= stmt.eval(stage, _buddy);
     	}
 
+	// Apply the length constraint on the dynamic arrays wherever required
+	// FIXME
+	
+	arrayMaxLengthCst.applyMaxArrayLengthCst(stageBDD, stage);
+	
 	double[uint] bddDist;
 	stageBDD.satDist(bddDist);
 
@@ -376,17 +403,17 @@ public size_t _esdl__countRands(size_t I=0, size_t C=0, T)(T t)
       // check for the integral members
       alias typeof(t.tupleof[I]) L;
       static if((isIntegral!L || isBitVector!L) &&
-		findRandAttr!(I, t) != -1) {
+		findRandElemAttr!(I, t) != -1) {
 	return _esdl__countRands!(I+1, C+1)(t);
       }
       else static if(isStaticArray!L && (isIntegral!(ElementType!L) ||
 					 isBitVector!(ElementType!L)) &&
-		     findRandAttr!(I, t) != -1) {
+		     findRandElemAttr!(I, t) != -1) {
 	  return _esdl__countRands!(I+1, C+1)(t);
 	}
       else static if(isDynamicArray!L && (isIntegral!(ElementType!L) ||
 					  isBitVector!(ElementType!L)) &&
-		     findRandsAttr!(I, t) != -1) {
+		     findRandArrayAttr!(I, t) != -1) {
 	  return _esdl__countRands!(I+1, C+1)(t);
 	}
       // ToDo -- Fixme -- Add code for array randomization here
@@ -453,6 +480,8 @@ interface RandomizableIntf
 
       void pre_randomize() {}
       void post_randomize() {}
+
+      Constraint! q{} _esdl__lengthConstraint;
     };
   }
 
@@ -490,32 +519,93 @@ public void _esdl__initCstEngine(T) (T t) {
   t._esdl__cstEng = new ConstraintEngine(t._esdl__randSeed);
   with(t._esdl__cstEng) {
     _buddy = _new!Buddy(400, 400);
-
-    _esdl__iterMems!_esdl__initCsts(t);
-    // _domains = _buddy.extDomain(_domLengths);
-
-    // _esdl__iterMems!_esdl__initBddVecs(t);
-    // printSolution();
+    _esdl__initCsts(t, t);
   }
-  // }
 }
 
 // I is the index within the class
 // CI is the cumulative index -- starts from the most derived class
 // and increases as we move up in the class hierarchy
-void _esdl__iterMems(alias F, size_t I=0, size_t CI=0, T)(T t)
-  if(is(T unused: RandomizableIntf) && is(T == class)) {
+void _esdl__initCsts(size_t I=0, size_t CI=0, T, S)(T t, S s)
+  if(is(T: RandomizableIntf) && is(T == class) &&
+     is(S: RandomizableIntf) && is(S == class)) {
     static if (I < t.tupleof.length) {
-      F!(I, CI)(t);
-      _esdl__iterMems!(F, I+1, CI+1) (t);
+      _esdl__initCst!(I, CI)(t, s);
+      _esdl__initCsts!(I+1, CI+1) (t, s);
     }
     else static if(is(T B == super)
 		   && is(B[0] : RandomizableIntf)
 		   && is(B[0] == class)) {
 	B[0] b = t;
-	_esdl__iterMems!(F, 0, CI) (b);
+	_esdl__initCsts!(0, CI) (b, s);
       }
   }
+
+void _esdl__initCst(size_t I=0, size_t CI=0, T, S) (T t, S s) {
+  import std.traits;
+  import std.conv;
+  import std.string;
+
+  auto l = t.tupleof[I];
+  alias typeof(l) L;
+  enum string NAME = chompPrefix (t.tupleof[I].stringof, "t.");
+  static if (is (L f == Constraint!C, immutable (char)[] C)) {
+    l = new Constraint!(C, NAME, T, S)(t, s, t._esdl__cstEng, NAME,
+				       cast(uint) t._esdl__cstEng.cstList.length);
+    static if(NAME == "_esdl__lengthConstraint") {
+      t._esdl__cstEng.arrayMaxLengthCst = l;
+    }
+    else {
+      t._esdl__cstEng.cstList ~= l;
+    }
+      
+  }
+  else {
+    synchronized (t) {
+      // Do nothing
+    }
+  }
+}
+
+// I is the index within the class
+// CI is the cumulative index -- starts from the most derived class
+// and increases as we move up in the class hierarchy
+void _esdl__initLengthCsts(size_t I=0, size_t CI=0, size_t RI=0, T)(T t, ref bdd stageBDD, uint stage)
+  if(is(T: RandomizableIntf) && is(T == class)) {
+    static if (I < t.tupleof.length) {
+      if(findRandAttr!(I, t)) {
+	_esdl__initLengthCst!(I, RI)(t, stageBDD, stage);
+	_esdl__initLengthCsts!(I+1, CI+1, RI+1) (t, stageBDD, stage);
+      }
+      else {
+	_esdl__initLengthCsts!(I+1, CI+1, RI) (t, stageBDD, stage);
+      }
+    }
+    else static if(is(T B == super)
+		   && is(B[0] : RandomizableIntf)
+		   && is(B[0] == class)) {
+	B[0] b = t;
+	_esdl__initLengthCsts!(0, CI) (b, stageBDD, stage);
+      }
+  }
+
+void _esdl__initLengthCst(size_t I=0, size_t RI=0, T) (T t, ref bdd stageBDD, uint stage) {
+  import std.traits;
+  import std.conv;
+  import std.string;
+
+  auto l = t.tupleof[I];
+  alias typeof(l) L;
+  enum string NAME = chompPrefix (t.tupleof[I].stringof, "t.");
+  static if(isDynamicArray!L) {
+    enum RLENGTH = findRandArrayAttr!(I, t);
+    auto cstVecPrim = t._cstRands[RI];
+    if(cstVecPrim !is null && cstVecPrim.stage() == stage) {
+      stageBDD &= cstVecPrim.eval(stage, stageBDD.root()).
+	lte(_esdl__cstVecRand(RLENGTH, t).eval(stage, stageBDD.root()));
+    }
+  }
+}
 
 auto _esdl__namedApply(string VAR, alias F, size_t I=0, size_t CI=0, T)(T t)
 if(is(T unused: RandomizableIntf) && is(T == class)) {
@@ -549,13 +639,13 @@ version(RBTREE) {
 	if(value !is null && value._coordinates[0] == CI) {
 	  values.popFront();
 	  _esdl__setRands!(I+1, CI+1) (t, values, rgen);
-	  static if(findRandAttr!(I, t) != -1) { // is @rand
+	  static if(findRandElemAttr!(I, t) != -1) { // is @rand
 	    alias typeof(t.tupleof[I]) L;
 	    t.tupleof[I] = cast(L) value.value;
 	  }
 	}
 	else {
-	  static if(findRandAttr!(I, t) != -1) { // is @rand
+	  static if(findRandElemAttr!(I, t) != -1) { // is @rand
 	    alias typeof(t.tupleof[I]) L;
 	    t.tupleof[I] = rgen.gen!L;
 	  }
@@ -578,15 +668,19 @@ version(RBTREE) {
        static if (I < t.tupleof.length) {
 	 alias typeof(t.tupleof[I]) L;
 	 static if (isDynamicArray!L) {
-	   enum RLENGTH = findRandsAttr!(I, t);
+	   enum RLENGTH = findRandArrayAttr!(I, t);
 	   static if(RLENGTH != -1) { // is @rand
 	     // make sure that there is only one dimension passed to @rand
-	     static assert(findRandsAttr!(I, t, 1) == int.min);
+	     static assert(findRandArrayAttr!(I, t, 1) == int.min);
 	     // enum ATTRS = __traits(getAttributes, t.tupleof[I]);
 	     // alias ATTRS[RLENGTH] ATTR;
-	     t.tupleof[I].length = rgen.gen(0, RLENGTH+1);
-	     // auto vecVal = vecVals[RI];
-	     // if(vecVal is null) {
+	     auto vecVal = vecVals[RI];
+	     if(vecVal is null) {
+	       t.tupleof[I].length = rgen.gen(0, RLENGTH+1);
+	     }
+	     else {
+	       t.tupleof[I].length = vecVal.value;
+	     }
 	     foreach(ref v; t.tupleof[I]) {
 	       import std.range;
 	       v = rgen.gen!(ElementType!L);
@@ -607,7 +701,7 @@ version(RBTREE) {
 	   }
 	 }
 	 else {
-	   static if(findRandAttr!(I, t) != -1) { // is @rand
+	   static if(findRandElemAttr!(I, t) != -1) { // is @rand
 	     static if(isStaticArray!L) {
 	       foreach(ref v; t.tupleof[I]) {
 		 import std.range;
@@ -641,78 +735,66 @@ version(RBTREE) {
      }
  }
 
-void _esdl__initCsts (size_t I=0, size_t CI=0, T) (T t) {
-  import std.traits;
-  import std.conv;
-  import std.string;
-
-  auto l = t.tupleof[I];
-  alias typeof(l) L;
-  enum string name = chompPrefix (t.tupleof[I].stringof, "t.");
-  static if (is (L f == Constraint!C, immutable (char)[] C)) {
-    l = new Constraint!(C, T)(t, t._esdl__cstEng, name,
-			      cast (uint) t._esdl__cstEng.cstList.length);
-    t._esdl__cstEng.cstList ~= l;
-  }
-  else {
-    synchronized (t) {
-      // Do nothing
-    }
-  }
-}
-
 template findRandAttr(size_t I, alias t) {
   enum int randAttr =
-    findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
+    findRandElemAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
-    findRandsAttrIndexed!(0, -1, 0, __traits(getAttributes, t.tupleof[I]));
-  static assert(randsAttr == -1, "Illegal use of @rand!N");
-  enum int findRandAttr = randAttr;
+    findRandArrayAttrIndexed!(0, -1, 0, __traits(getAttributes, t.tupleof[I]));
+  enum bool findRandAttr = randAttr != -1 || randsAttr != -1;
 }
 
-template findRandsAttr(size_t I, alias t, size_t R=0) {
+template findRandElemAttr(size_t I, alias t) {
   enum int randAttr =
-    findRandAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
+    findRandElemAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
   enum int randsAttr =
-    findRandsAttrIndexed!(0, -1, R, __traits(getAttributes, t.tupleof[I]));
-  static assert(randAttr == -1,	"Illegal use of @rand");
-  enum int findRandsAttr = randsAttr;
+    findRandArrayAttrIndexed!(0, -1, 0, __traits(getAttributes, t.tupleof[I]));
+  static assert(randsAttr == -1, "Illegal use of @rand!N");
+  enum int findRandElemAttr = randAttr;
 }
 
-template findRandAttrIndexed(size_t C, int P, A...) {
-  static if(A.length == 0) enum int findRandAttrIndexed = P;
+template findRandArrayAttr(size_t I, alias t, size_t R=0) {
+  enum int randAttr =
+    findRandElemAttrIndexed!(0, -1, __traits(getAttributes, t.tupleof[I]));
+  enum int randsAttr =
+    findRandArrayAttrIndexed!(0, -1, R, __traits(getAttributes, t.tupleof[I]));
+  static assert(randAttr == -1,	"Illegal use of @rand");
+  enum int findRandArrayAttr = randsAttr;
+}
+
+template findRandElemAttrIndexed(size_t C, int P, A...) {
+  static if(A.length == 0) enum int findRandElemAttrIndexed = P;
   else static if(__traits(isSame, A[0], rand)) {
       static assert(P == -1, "@rand used twice in the same declaration");
       static if(A.length > 1)
-	enum int findRandAttrIndexed = findRandAttrIndexed!(C+1, C, A[1..$]);
+	enum int findRandElemAttrIndexed = findRandElemAttrIndexed!(C+1, C, A[1..$]);
       else
-	enum int findRandAttrIndexed = C;
+	enum int findRandElemAttrIndexed = C;
     }
     else {
-      enum int findRandAttrIndexed = findRandAttrIndexed!(C+1, P, A[1..$]);
+      enum int findRandElemAttrIndexed = findRandElemAttrIndexed!(C+1, P, A[1..$]);
     }
 }
 
-template findRandsAttrIndexed(size_t C, int P, size_t R, A...) {
-  static if(A.length == 0) enum int findRandsAttrIndexed = P;
+template findRandArrayAttrIndexed(size_t C, int P, size_t R, A...) {
+  static if(A.length == 0) enum int findRandArrayAttrIndexed = P;
   else static if(is(A[0] unused: rand!M, M...)) {
       static assert(P == -1, "@rand used twice in the same declaration");
       static if(A.length > 1) {
-	enum int findRandsAttrIndexed =
-	  findRandsAttrIndexed!(C+1, C, R, A[1..$]);
+	enum int findRandArrayAttrIndexed =
+	  findRandArrayAttrIndexed!(C+1, C, R, A[1..$]);
       }
       else {
 	static if(R < M.length && R >= 0) {
-	  enum int findRandsAttrIndexed = M[R];
+	  enum int findRandArrayAttrIndexed = M[R];
 	}
 	else {
-	  enum int findRandsAttrIndexed = int.min;
+	  enum int findRandArrayAttrIndexed = int.min;
 	}
       }
     }
     else {
-      enum int findRandsAttrIndexed =
-	findRandsAttrIndexed!(C+1, P, R, A[1..$]);
+      enum int findRandArrayAttrIndexed =
+	findRandArrayAttrIndexed!(C+1, P, R, A[1..$]);
     }
 }
 
@@ -892,14 +974,14 @@ class CstVecRandArr: CstVecRand
 
   // Also has an array of CstVecRand to map all the elements of the
   // array
-  CstVecRand[] elems;
+  CstVecRand[] _elems;
 
   CstVecRand opIndex(size_t idx) {
-    return elems[idx];
+    return _elems[idx];
   }
 
   void opIndexAssign(CstVecRand c, size_t idx) {
-    elems[idx] = c;
+    _elems[idx] = c;
   }
 
   public this(string name, long value, bool signed,
@@ -1336,7 +1418,7 @@ if(is(T unused: RandomizableIntf) && is(T == class)) {
       return F!(VAR, I, CI, RI)(t);
     }
     else {
-      static if(findRandAttr!(I, t) != -1) {
+      static if(findRandElemAttr!(I, t) != -1) {
 	return _esdl__randNamedApply!(VAR, F, I+1, CI+1, RI+1) (t);
       }
       else {
@@ -1355,12 +1437,34 @@ if(is(T unused: RandomizableIntf) && is(T == class)) {
     }
  }
 
-public CstVecExpr _esdl__bddVec(string VAR, T)(ref T t)
-  if(is(T f: RandomizableIntf) && is(T == class)) {
-    return _esdl__randNamedApply!(VAR, _esdl__bddVec)(t);
+private size_t _esdl__cstDelimiter(string name) {
+  foreach(i, c; name) {
+    if(c is '.' || c is '[') {
+      return i;
+    }
+  }
+  return name.length;
 }
 
-public CstVecExpr _esdl__bddVec(string VAR, size_t I,
+public CstVecExpr _esdl__cstVecRand(string VAR, T)(ref T t)
+  if(is(T f: RandomizableIntf) && is(T == class)) {
+    enum IDX = _esdl__cstDelimiter(VAR);
+    enum LOOKUP = VAR[0..IDX];
+    static if(IDX == VAR.length) {
+      return _esdl__randNamedApply!(LOOKUP, _esdl__cstVecRand)(t);
+    }
+    else static if(VAR[IDX..$] == ".length") {
+	return _esdl__randNamedApply!(LOOKUP, _esdl__cstVecRandArrLength)(t);
+    }
+    else static if(VAR[IDX] == '.') {
+      // hierarchical constraints -- not implemented yet
+    }
+    else static if(VAR[IDX] == '[') {
+	// hmmmm
+      }
+}
+
+public CstVecExpr _esdl__cstVecRand(string VAR, size_t I,
 				size_t CI, size_t RI, T)(ref T t) {
   import std.traits: isNumeric;
   static CstVecExpr dummyCstWithCoord;
@@ -1377,7 +1481,7 @@ public CstVecExpr _esdl__bddVec(string VAR, size_t I,
     else static assert(false, "Only numeric or bitvector expression"
 		       "are allowed in constraint expressions");
 
-  static if(findRandAttr!(I, t) == -1) {
+  static if(findRandElemAttr!(I, t) == -1) {
     version(RBTREE) {
       uint[] coordinates = [cast(uint) CI];
       auto cstVecPrim = new CstVecRand(t.tupleof[I].stringof, t.tupleof[I],
@@ -1418,7 +1522,40 @@ public CstVecExpr _esdl__bddVec(string VAR, size_t I,
   return cstVecPrim;
 }
 
-public CstVecConst _esdl__bddVec(INT, T)(INT var, ref T t)
+public CstVecExpr _esdl__cstVecRandArrLength(string VAR, size_t I,
+					     size_t CI, size_t RI, T)(ref T t) {
+  import std.traits;
+  import std.range;
+
+  // need to know the size and sign for creating a bddvec
+  alias typeof(t.tupleof[I]) L;
+  static assert(isArray!L);
+  alias ElementType!L E;
+  static assert(isNumeric!E || isBitVector!E);
+    
+  bool signed = false;		// array size can not be negative
+
+  uint bitcount = 32;		// allow arrays only upto size 4G
+
+  enum RLENGTH = findRandArrayAttr!(I, t);
+
+  static if(RLENGTH != -1) { // @rand!N form
+    static assert(isDynamicArray!L);
+    auto cstVecPrim = t._cstRands[RI];
+    if(cstVecPrim is null) {
+      cstVecPrim = new CstVecRandArr(t.tupleof[I].stringof, RLENGTH,
+				     signed, bitcount, true);
+      t._cstRands[RI] = cstVecPrim;
+    }
+  }
+  else {
+    auto cstVecPrim = new CstVecRand(t.tupleof[I].stringof, t.tupleof[I],
+				     signed, bitcount, false);
+  }
+  return cstVecPrim;
+}
+
+public CstVecConst _esdl__cstVecRand(INT, T)(INT var, ref T t)
   if(isIntegral!INT && is(T f: RandomizableIntf) && is(T == class)) {
     return new CstVecConst(var, isVarSigned!INT);
   }

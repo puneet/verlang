@@ -12,6 +12,9 @@ class Bar: Randomizable
     writeln("foo: ", foo);
     writeln("bar: ", bar);
   }
+  Constraint! q{
+    foo.length > 7;
+  } cstFooLength;
 }
 
 void main()

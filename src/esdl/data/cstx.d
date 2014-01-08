@@ -541,7 +541,7 @@ char[] translate(in string CST) {
       // 		       buffer, tgtCursor);
       // tgtCursor = fill("}(_outer)", buffer, tgtCursor);
 
-      dstCursor = fill("_esdl__bddVec!q{", buffer, dstCursor);
+      dstCursor = fill("_esdl__cstVecRand!q{", buffer, dstCursor);
       dstCursor = fill(CST[srcTag..srcCursor],
 		       buffer, dstCursor);
       dstCursor = fill("}(_outer)", buffer, dstCursor);
@@ -552,7 +552,7 @@ char[] translate(in string CST) {
       // 		       buffer, tgtCursor);
       // tgtCursor = fill(", _outer)", buffer, tgtCursor);
 
-      dstCursor = fill("_esdl__bddVec(", buffer, dstCursor);
+      dstCursor = fill("_esdl__cstVecRand(", buffer, dstCursor);
       dstCursor = fill(CST[srcTag..srcCursor],
 		       buffer, dstCursor);
       dstCursor = fill(", _outer)", buffer, dstCursor);
