@@ -2097,8 +2097,10 @@ struct vec(bool S, bool L, N...) if(CheckVecParams!N)
       }
 
     public auto opBinary(string op, string file= __FILE__,
-			 size_t line = __LINE__, V)(V other)
-      if(isBitVector!V && (op == "*")) {
+			 size_t line = __LINE__, U)(U rhs)
+      if((isBitVector!U || isIntegral!U) && (op == "*")) {
+	alias vec!U V;
+	V other = rhs;
 	reportX!(file, line)(other);
 	// The result is signed only if both the operands are signed
 	static if(ISSIGNED && other.ISSIGNED)
