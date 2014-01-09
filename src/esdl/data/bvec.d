@@ -4983,25 +4983,23 @@ unittest {
 
 }
 
-// unittest {
-// 
-//    import std.stdio ;
-// 
-//    bit a = true  ;
-//    bit b = false ;
-//    bit y = false ;
-// 
-//    assert(a);
-//    assert(!b);
-//    assert(!y);
-//    
-//    assert(!(a & b));
-// 
-//    writefln(" Err :: There is a bug for compound boolean (logic) operations");
-// 
-//    assert((a & (!b)));
-// 
-// }
+ unittest {
+ 
+    import std.stdio ;
+ 
+    bit a = true  ;
+    bit b = false ;
+    bit y = false ;
+ 
+    assert(a);
+    assert(!b);
+    assert(!y);
+    
+    assert(!(a & b));
+ 
+    assert((a & (!b)));
+ 
+ }
 
 
 
@@ -5014,6 +5012,7 @@ unittest {
    delete(b) ;
    delete(c) ;
 
+{
 // Associative arrays :
    ubvec!32 [string]  address_map = [ "reset_ctl_reg" : cast(ubvec!32)0x0,
                                       "clock_ctl_reg" : cast(ubvec!32)0x1,
@@ -5044,6 +5043,612 @@ unittest {
 
    writefln("%s",address_map_temp);
 
+
 }
 
+{
+// Associative arrays :
+   ubvec!128 [string]  address_map = [ "reset_ctl_reg" : cast(ubvec!128)0x0,
+                                      "clock_ctl_reg" : cast(ubvec!128)0x1,
+                                      "modem_ctl_reg" : cast(ubvec!128)0x2,
+                                      "moden_ctl_reg" : cast(ubvec!128)0x3,
+                                      "modeo_ctl_reg" : cast(ubvec!128)0x4,
+                                      "modep_ctl_reg" : cast(ubvec!128)0x5,
+                                      "modeq_ctl_reg" : cast(ubvec!128)0x6,
+                                      "moder_ctl_reg" : cast(ubvec!128)0x7,
+                                      "modes_ctl_reg" : cast(ubvec!128)0x8
+                                    ];
+
+   
+   writefln("%s",address_map);
+
+   address_map["data1_val_reg"] = cast(ubvec!128)0x9  ;
+   address_map["data2_val_reg"] = cast(ubvec!128)0xa  ;
+   address_map["data3_val_reg"] = cast(ubvec!128)0xb  ;
+   address_map["data4_val_reg"] = cast(ubvec!128)0xc  ;
+   address_map["data5_val_reg"] = cast(ubvec!128)0xd  ;
+   address_map["data6_val_reg"] = cast(ubvec!128)0xe  ;
+   address_map["data7_val_reg"] = cast(ubvec!128)0xf  ;
+   address_map["data8_val_reg"] = cast(ubvec!128)0x10 ;
+   
+   writefln("%s",address_map);
+
+   ubvec!128 [string]  address_map_temp = address_map ;
+
+   writefln("%s",address_map_temp);
+
+}
+
+}
+
+
+unittest {
+
+   import std.random ;
+   import std.stdio ;
+
+   ubvec!128 x1 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x1 = (x1 << 16) | cast(ubvec!128)uniform(0, 0xFF); 
+   }
+   
+
+   bvec!128 x2 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x2 = (x2 << 16) | cast(ubvec!128)uniform(0, 0xFF); 
+   }
+   
+
+   ulvec!128 x3 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x3 = (x3 << 16) | cast(ubvec!128)uniform(0, 0xFF); 
+   }
+   
+
+   lvec!128 x4 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x4 = (x4 << 16) | cast(ubvec!128)uniform(0, 0xFF); 
+   }
+
+   {
+      ubvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ubvec!512 b = x1 + x2 + x3 + x4 ; 
+      ubvec!512 c = x1 - x2 - x3 - x4 ; 
+      ubvec!512 d = x1 | x2 | cast(ubvec!512)x3 | cast(ubvec!512)x4 ; 
+      ubvec!512 e = x1 || x2 || cast(ubvec!512)x3 || cast(ubvec!512)x4 ; 
+      ubvec!512 f = x1 & x2 & cast(ubvec!512)x3 & cast(ubvec!512)x4 ; 
+      ubvec!512 g = x1 && x2 && cast(ubvec!512)x3 && cast(ubvec!512)x4 ; 
+      ubvec!512 h = x1 ^ x2 ^ cast(ubvec!512)x3 ^ cast(ubvec!512)x4 ; 
+   }
+
+   {
+      bvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      bvec!512 b = x1 + x2 + x3 + x4 ; 
+      bvec!512 c = x1 - x2 - x3 - x4 ; 
+      bvec!512 d = x1 | x2 | cast(bvec!512)x3 | cast(bvec!512)x4 ; 
+      bvec!512 e = x1 || x2 || cast(bvec!512)x3 || cast(bvec!512)x4 ; 
+      bvec!512 f = x1 & x2 & cast(bvec!512)x3 & cast(bvec!512)x4 ; 
+      bvec!512 g = x1 && x2 && cast(bvec!512)x3 && cast(bvec!512)x4 ; 
+      bvec!512 h = x1 ^ x2 ^ cast(bvec!512)x3 ^ cast(bvec!512)x4 ; 
+   }
+
+   {
+      lvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      lvec!512 b = x1 + x2 + x3 + x4 ; 
+      lvec!512 c = x1 - x2 - x3 - x4 ; 
+      lvec!512 d = x1 | x2 | x3 | x4 ; 
+      lvec!512 e = x1 || x2 || x3 || x4 ; 
+      lvec!512 f = x1 & x2 & x3 & x4 ; 
+      lvec!512 g = x1 && x2 && x3 && x4 ; 
+      lvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+
+   {
+      ulvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ulvec!512 b = x1 + x2 + x3 + x4 ; 
+      ulvec!512 c = x1 - x2 - x3 - x4 ; 
+      ulvec!512 d = x1 | x2 | x3 | x4 ; 
+      ulvec!512 e = x1 || x2 || x3 || x4 ; 
+      ulvec!512 f = x1 & x2 & x3 & x4 ; 
+      ulvec!512 g = x1 && x2 && x3 && x4 ; 
+      ulvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+}
+
+unittest {
+
+   import std.random ;
+   import std.stdio ;
+
+   ubvec!128 x1 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x1 = (x1 << 16) | cast(ubvec!128)0xFF; 
+   }
+   
+
+   bvec!128 x2 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x2 = (x2 << 16) | cast(ubvec!128)0xFF; 
+   }
+   
+
+   ulvec!128 x3 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x3 = (x3 << 16) | cast(ubvec!128)0xFF; 
+   }
+   
+
+   lvec!128 x4 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x4 = (x4 << 16) | cast(ubvec!128)0xFF; 
+   }
+
+   {
+      ubvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ubvec!512 b = x1 + x2 + x3 + x4 ; 
+      ubvec!512 c = x1 - x2 - x3 - x4 ; 
+      ubvec!512 d = x1 | x2 | cast(ubvec!512)x3 | cast(ubvec!512)x4 ; 
+      ubvec!512 e = x1 || x2 || cast(ubvec!512)x3 || cast(ubvec!512)x4 ; 
+      ubvec!512 f = x1 & x2 & cast(ubvec!512)x3 & cast(ubvec!512)x4 ; 
+      ubvec!512 g = x1 && x2 && cast(ubvec!512)x3 && cast(ubvec!512)x4 ; 
+      ubvec!512 h = x1 ^ x2 ^ cast(ubvec!512)x3 ^ cast(ubvec!512)x4 ; 
+   }
+
+   {
+      bvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      bvec!512 b = x1 + x2 + x3 + x4 ; 
+      bvec!512 c = x1 - x2 - x3 - x4 ; 
+      bvec!512 d = x1 | x2 | cast(bvec!512)x3 | cast(bvec!512)x4 ; 
+      bvec!512 e = x1 || x2 || cast(bvec!512)x3 || cast(bvec!512)x4 ; 
+      bvec!512 f = x1 & x2 & cast(bvec!512)x3 & cast(bvec!512)x4 ; 
+      bvec!512 g = x1 && x2 && cast(bvec!512)x3 && cast(bvec!512)x4 ; 
+      bvec!512 h = x1 ^ x2 ^ cast(bvec!512)x3 ^ cast(bvec!512)x4 ; 
+   }
+
+   {
+      lvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      lvec!512 b = x1 + x2 + x3 + x4 ; 
+      lvec!512 c = x1 - x2 - x3 - x4 ; 
+      lvec!512 d = x1 | x2 | x3 | x4 ; 
+      lvec!512 e = x1 || x2 || x3 || x4 ; 
+      lvec!512 f = x1 & x2 & x3 & x4 ; 
+      lvec!512 g = x1 && x2 && x3 && x4 ; 
+      lvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+
+   {
+      ulvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ulvec!512 b = x1 + x2 + x3 + x4 ; 
+      ulvec!512 c = x1 - x2 - x3 - x4 ; 
+      ulvec!512 d = x1 | x2 | x3 | x4 ; 
+      ulvec!512 e = x1 || x2 || x3 || x4 ; 
+      ulvec!512 f = x1 & x2 & x3 & x4 ; 
+      ulvec!512 g = x1 && x2 && x3 && x4 ; 
+      ulvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+}
+
+
+unittest {
+
+   import std.random ;
+   import std.stdio ;
+
+   static ubvec!128 x1 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x1 = (x1 << 16) | cast(ubvec!128)0x00; 
+   }
+   
+
+   static bvec!128 x2 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x2 = (x2 << 16) | cast(ubvec!128)0x00; 
+   }
+   
+
+   static ulvec!128 x3 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x3 = (x3 << 16) | cast(ubvec!128)0x00; 
+   }
+   
+
+   static lvec!128 x4 ;
+   
+   for(uint i = 0 ; i < 9 ; ++i){
+      x4 = (x4 << 16) | cast(ubvec!128)0x00; 
+   }
+
+   {
+      ubvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ubvec!512 b = x1 + x2 + x3 + x4 ; 
+      ubvec!512 c = x1 - x2 - x3 - x4 ; 
+      ubvec!512 d = x1 | x2 | cast(ubvec!512)x3 | cast(ubvec!512)x4 ; 
+      ubvec!512 e = x1 || x2 || cast(ubvec!512)x3 || cast(ubvec!512)x4 ; 
+      ubvec!512 f = x1 & x2 & cast(ubvec!512)x3 & cast(ubvec!512)x4 ; 
+      ubvec!512 g = x1 && x2 && cast(ubvec!512)x3 && cast(ubvec!512)x4 ; 
+      ubvec!512 h = x1 ^ x2 ^ cast(ubvec!512)x3 ^ cast(ubvec!512)x4 ; 
+   }
+
+   {
+      bvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      bvec!512 b = x1 + x2 + x3 + x4 ; 
+      bvec!512 c = x1 - x2 - x3 - x4 ; 
+      bvec!512 d = x1 | x2 | cast(bvec!512)x3 | cast(bvec!512)x4 ; 
+      bvec!512 e = x1 || x2 || cast(bvec!512)x3 || cast(bvec!512)x4 ; 
+      bvec!512 f = x1 & x2 & cast(bvec!512)x3 & cast(bvec!512)x4 ; 
+      bvec!512 g = x1 && x2 && cast(bvec!512)x3 && cast(bvec!512)x4 ; 
+      bvec!512 h = x1 ^ x2 ^ cast(bvec!512)x3 ^ cast(bvec!512)x4 ; 
+   }
+
+   {
+      lvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      lvec!512 b = x1 + x2 + x3 + x4 ; 
+      lvec!512 c = x1 - x2 - x3 - x4 ; 
+      lvec!512 d = x1 | x2 | x3 | x4 ; 
+      lvec!512 e = x1 || x2 || x3 || x4 ; 
+      lvec!512 f = x1 & x2 & x3 & x4 ; 
+      lvec!512 g = x1 && x2 && x3 && x4 ; 
+      lvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+
+   {
+      ulvec!512 a = x1 ~ x2 ~ x3 ~ x4 ; 
+      ulvec!512 b = x1 + x2 + x3 + x4 ; 
+      ulvec!512 c = x1 - x2 - x3 - x4 ; 
+      ulvec!512 d = x1 | x2 | x3 | x4 ; 
+      ulvec!512 e = x1 || x2 || x3 || x4 ; 
+      ulvec!512 f = x1 & x2 & x3 & x4 ; 
+      ulvec!512 g = x1 && x2 && x3 && x4 ; 
+      ulvec!512 h = x1 ^ x2 ^ x3 ^ x4 ; 
+   }
+}
+
+
+unittest {
+
+   import std.stdio ;
+
+   //alias bvec!16 mtype ;
+   alias ushort mtype ;
+
+   class nclass {
+      public mtype x ;
+
+      public void mfunc(ushort inp_){
+         x = cast(mtype)inp_ ;
+      }
+   }
+
+   nclass n_class ; 
+   writefln("Error: Failure to access class member function ");
+   //n_class.mfunc(cast(mtype)100);
+
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.container ;
+   import std.algorithm;
+
+   alias uint mtype ;
+   SList!mtype myList;
+
+   writefln("Error: bvec, etc. does not work for std containers ");
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+
+   { bvec!32 x = to!(bvec!32)(0xffffffff); writefln("%d",x); }
+
+   { ubvec!32 x = to!(ubvec!32)(0xffffffff); writefln("%d",x); }
+
+   { lvec!32 x = to!(lvec!32)(0xffffffff); writefln("%d",x); }
+
+   { ulvec!32 x = to!(ulvec!32)(0xffffffff); writefln("%d",x); }
+
+
+   { bvec!128 x = to!(bvec!128)(0xffffffffffffffff); writefln("%d",x); }
+
+   { ubvec!128 x = to!(ubvec!128)(0xffffffffffffffff); writefln("%d",x); }
+
+   { lvec!128 x = to!(lvec!128)(0xffffffffffffffff); writefln("%d",x); }
+
+   { ulvec!128 x = to!(ulvec!128)(0xffffffffffffffff); writefln("%d",x); }
+
+
+  
+
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+
+   { bvec!32 x = to!(bvec!32)(0xffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { ubvec!32 x = to!(ubvec!32)(0xffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { lvec!32 x = to!(lvec!32)(0xffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { ulvec!32 x = to!(ulvec!32)(0xffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+
+   { bvec!128 x = to!(bvec!128)(0xffffffffffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { ubvec!128 x = to!(ubvec!128)(0xffffffffffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { lvec!128 x = to!(lvec!128)(0xffffffffffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+   { ulvec!128 x = to!(ulvec!128)(0xffffffffffffffff); int y = to!(int)(x) ; writefln("%d",y); }
+
+
+  
+
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+
+   { bvec!32 x = to!(bvec!32)(0xffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { ubvec!32 x = to!(ubvec!32)(0xffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { lvec!32 x = to!(lvec!32)(0xffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { ulvec!32 x = to!(ulvec!32)(0xffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+
+   { bvec!128 x = to!(bvec!128)(0xffffffffffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { ubvec!128 x = to!(ubvec!128)(0xffffffffffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { lvec!128 x = to!(lvec!128)(0xffffffffffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+   { ulvec!128 x = to!(ulvec!128)(0xffffffffffffffff); uint y = to!(uint)(x) ; writefln("%d",y); }
+
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+   import std.math ;
+
+   double Fs  = 1024.0 ;
+   ulong  Ns  = 1024 ;
+   double Ts  = 1.0/Fs ;
+   double t   = 0 ;
+   double Fin = 50.0 ;
+
+   bvec!16[] y ;
+   y.length = Ns ;
+
+   for(ulong i = 0 ; i < Ns ; ++i){
+      y[i] = to!(bvec!16)(cast(ushort)(65535.0*sin(2.0*PI*Fin*t + 1.0)/2.0)); 
+
+      t = t + Ts ;
+   }
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+   import std.math ;
+
+   double Fs  = 1024.0 ;
+   ulong  Ns  = 1024 ;
+   double Ts  = 1.0/Fs ;
+   double t   = 0 ;
+   double Fin = 50.0 ;
+
+   ubvec!16[] y ;
+   y.length = Ns ;
+
+   for(ulong i = 0 ; i < Ns ; ++i){
+      y[i] = to!(ubvec!16)(cast(ushort)(65535.0*sin(2.0*PI*Fin*t + 1.0)/2.0)); 
+
+      t = t + Ts ;
+   }
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+   import std.math ;
+
+   double Fs  = 1024.0 ;
+   ulong  Ns  = 1024 ;
+   double Ts  = 1.0/Fs ;
+   double t   = 0 ;
+   double Fin = 50.0 ;
+
+   lvec!16[] y ;
+   y.length = Ns ;
+
+   for(ulong i = 0 ; i < Ns ; ++i){
+      y[i] = to!(lvec!16)(cast(ushort)(65535.0*sin(2.0*PI*Fin*t + 1.0)/2.0)); 
+
+      t = t + Ts ;
+   }
+}
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+   import std.math ;
+
+   double Fs  = 1024.0 ;
+   ulong  Ns  = 1024 ;
+   double Ts  = 1.0/Fs ;
+   double t   = 0 ;
+   double Fin = 50.0 ;
+
+   ulvec!16[] y ;
+   y.length = Ns ;
+
+   for(ulong i = 0 ; i < Ns ; ++i){
+      y[i] = to!(ulvec!16)(cast(ushort)(65535.0*sin(2.0*PI*Fin*t + 1.0)/2.0)); 
+
+      t = t + Ts ;
+   }
+}
+
+
+
+unittest {
+
+   import std.stdio ;
+   import std.conv ;
+
+   ubvec!16 x = to!(ubvec!16)(cast(ushort)32768) ;
+   
+   float y = to!(float)(x);
+
+   writefln("%f",y);
+
+}
+
+
+unittest {
+
+   import std.conv    ;
+   import std.variant ;
+
+   Variant a ;
+   a = 100 ;
+
+   bvec!16 x1 = to!(bvec!16)(cast(ushort)32768) ;
+   a = x1 ;
+
+   ubvec!16 x2 = to!(ubvec!16)(cast(ushort)32768) ;
+   a = x2 ;
+
+   lvec!16 x3 = to!(lvec!16)(cast(ushort)32768) ;
+   a = x3 ;
+
+   ulvec!16 x4 = to!(ulvec!16)(cast(ushort)32768) ;
+   a = x4 ;
+
+
+}
+
+
+unittest {
+   
+   import std.algorithm ;
+
+   bvec!32 [] arr1 = [ to!(bvec!32)(1), to!(bvec!32)(2), to!(bvec!32)(3), to!(bvec!32)(4) ];
+   bvec!32 [] arr2 = [ to!(bvec!32)(5), to!(bvec!32)(6) ];
+   auto squares = map!(a => a * a)(chain(arr1, arr2));
+   assert(equal(squares, [ 1, 4, 9, 16, 25, 36 ]));
+
+}
+
+unittest {
+
+   import std.stdio ;
+
+   {
+      bvec!32 i = 32767;
+      auto twice  = function (bvec!32 x) => x * 2;
+      auto square = delegate (bvec!32 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      ubvec!32 i = 32767;
+      auto twice  = function (ubvec!32 x) => x * 2;
+      auto square = delegate (ubvec!32 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      lvec!32 i = 32767;
+      auto twice  = function (lvec!32 x) => x + x;
+      auto square = delegate (lvec!32 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      ulvec!32 i = 32767;
+      auto twice  = function (ulvec!32 x) => x + x;
+      auto square = delegate (ulvec!32 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+
+}
+
+
+unittest {
+
+   import std.stdio ;
+
+   {
+      bvec!128 i = 32767;
+      auto twice  = function (bvec!128 x) => x + x;
+      auto square = delegate (bvec!128 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      ubvec!128 i = 32767;
+      auto twice  = function (ubvec!128 x) => x + x;
+      auto square = delegate (ubvec!128 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      lvec!128 i = 32767;
+      auto twice  = function (lvec!128 x) => x + x;
+      auto square = delegate (lvec!128 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+   {
+      ulvec!128 i = 32767;
+      auto twice  = function (ulvec!128 x) => x + x;
+      auto square = delegate (ulvec!128 x) => x * x;
+   
+      writeln(twice(i));  
+      writeln(square(i));
+   }
+
+
+}
 

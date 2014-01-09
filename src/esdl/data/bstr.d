@@ -116,18 +116,18 @@ struct BitString(bool L)
     }
   }
 
-  unittest
-  {
-    void Fun(const lstr arr)
-    {
-      auto x = arr[0];
-      assert(x == LOGIC_X);
-    }
-    LogicArray a;
-    a.length = 3;
-    a[0] = LOGIC_X;
-    Fun(a);
-  }
+  //unittest
+  //{
+  //  void Fun(const lstr arr)
+  //  {
+  //    auto x = arr[0];
+  //    assert(x == LOGIC_X);
+  //  }
+  //  LogicArray a;
+  //  a.length = 3;
+  //  a[0] = LOGIC_X;
+  //  Fun(a);
+  //}
 
   /**********************************************
    * Sets the $(D i)'th bit in the $(D BitArray).
@@ -375,21 +375,21 @@ struct BitString(bool L)
     return this;
   }
 
-  unittest
-  {
-    debug(bitstring) printf("BitString.reverse.unittest\n");
+  //unittest
+  //{
+  //  debug(bitstring) printf("BitString.reverse.unittest\n");
 
-    BitString b;
-    static bool[5] data = [1,0,1,1,0];
-    int i;
+  //  BitString b;
+  //  static bool[5] data = [1,0,1,1,0];
+  //  int i;
 
-    b.init(data);
-    b.reverse;
-    for (i = 0; i < data.length; i++)
-      {
-        assert(b[i] == data[4 - i]);
-      }
-  }
+  //  b.init(data);
+  //  b.reverse;
+  //  for (i = 0; i < data.length; i++)
+  //    {
+  //      assert(b[i] == data[4 - i]);
+  //    }
+  //}
 
 
   // /***************************************
